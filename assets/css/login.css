@@ -127,31 +127,69 @@
     border-color: #5d6064;
 }
 
-.login__enviar {
-    margin-top: var(--esp-2);
-    padding: 16px;
-    border: 1px solid var(--cor-prata);
+/* ---- Lapiseira como botão de envio ---------------------------------- */
+.login__lapiseira {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--esp-3);
+    width: 100%;
+    margin-top: var(--esp-3);
+    padding: var(--esp-4) var(--esp-3) var(--esp-3);
+    border: 1px solid transparent;
     border-radius: var(--raio);
+    color: var(--cor-prata);
+    transition: color var(--transicao), border-color var(--transicao);
+}
+
+.login__lapiseira-desenho {
+    width: 100%;
+    max-width: 340px;
+    overflow: visible; /* o grafite avança um pouco além do desenho no clique */
+}
+
+.login__lapiseira-rotulo {
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
     color: var(--cor-sobre-preto);
     font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    transition: background-color var(--transicao), color var(--transicao);
+    transition: border-color var(--transicao);
 }
 
-.login__enviar:hover {
-    background-color: var(--cor-sobre-preto);
-    color: var(--cor-preto);
+.login__lapiseira:hover {
+    color: var(--cor-sobre-preto);
+    border-color: #2e2f33;
 }
 
-.login__enviar:active {
-    background-color: var(--cor-prata);
+.login__lapiseira:hover .login__lapiseira-rotulo {
+    border-bottom-color: currentColor;
 }
 
-.login__enviar:focus-visible,
-.login__marca:focus-visible,
-.login__rodape a:focus-visible {
+/* Clique mecânico: o botão traseiro afunda (anda para dentro do corpo)
+   e o grafite avança pela ponta, como numa lapiseira de verdade.
+   Só mexemos em transform, que a placa de vídeo anima sem recalcular o layout.
+   :active cobre o mouse pressionado; .login__lapiseira--clique é posta pelo
+   login.js no envio (teclado com Enter também dispara). */
+.login__lapiseira .lapiseira__botao,
+.login__lapiseira .lapiseira__grafite {
+    transition: transform 120ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+.login__lapiseira:active .lapiseira__botao,
+.login__lapiseira--clique .lapiseira__botao {
+    transform: translateX(4px);
+}
+
+.login__lapiseira:active .lapiseira__grafite,
+.login__lapiseira--clique .lapiseira__grafite {
+    transform: translateX(3px);
+}
+
+.login__lapiseira:focus-visible,
+.login__marca:focus-visible {
     outline-color: var(--cor-prata);
 }
 

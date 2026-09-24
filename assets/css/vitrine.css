@@ -10,7 +10,7 @@
 
 .conceito__abertura {
     max-width: 760px;
-    margin: 0 auto var(--esp-7);
+    margin: 0 auto var(--esp-6);
     text-align: center;
 }
 
@@ -24,6 +24,31 @@
     margin: var(--esp-4) auto 0;
     color: var(--cor-texto-secundario);
     font-size: 16px;
+}
+
+/* ---- Traço de grafite (Fase 2) --------------------------------------
+   Técnica: stroke-dasharray + stroke-dashoffset.
+   - dasharray 1 = um traço do tamanho da linha inteira (pathLength="1" no SVG)
+     seguido de um espaço do mesmo tamanho.
+   - dashoffset empurra esse padrão: 1 = só o espaço aparece (linha invisível),
+     0 = o traço cobre tudo (linha completa).
+   O JS atualiza a variável --progresso (0 a 1) conforme o scroll, e o
+   dashoffset vira 1 - progresso: a linha "é desenhada" da esquerda para a direita. */
+.traco-grafite {
+    width: 100%;
+    height: 24px;
+    margin-bottom: var(--esp-6);
+    overflow: visible;
+}
+
+.traco-grafite__linha {
+    stroke: var(--cor-texto);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke; /* espessura fixa mesmo com o SVG esticado */
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: calc(1 - var(--progresso, 1));
+    opacity: 0.75;
 }
 
 .pilares {
@@ -221,4 +246,29 @@
 .card-produto--inativo .card-produto__foto img,
 .card-produto--inativo .card-produto__info {
     opacity: 0.5;
+}
+
+
+/* ---- Entrada dos cards (Fase 2) ---------------------------------------
+   O animacoes.js põe .animar-entrada na grade e .visivel em cada card
+   quando ele entra na tela (IntersectionObserver). Sem JS, nada disso é
+   aplicado e os cards aparecem normalmente.
+   --atraso escalona os cards de uma mesma linha (0, 1, 2, 3 × 80 ms). */
+.animar-entrada .card-produto {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 600ms ease, transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: calc(var(--atraso, 0) * 80ms);
+}
+
+.animar-entrada .card-produto.visivel {
+    opacity: 1;
+    transform: none;
+}
+
+/* Menos movimento: sem deslocamento, só um fade rápido */
+@media (prefers-reduced-motion: reduce) {
+    .animar-entrada .card-produto {
+        transform: none;
+    }
 }

@@ -77,7 +77,15 @@ include __DIR__ . '/../includes/head.php';
                         <input type="password" name="password" id="password" autocomplete="current-password">
                     </div>
 
-                    <button type="submit" id="enviar" class="login__enviar">Entrar</button>
+                    <!-- A lapiseira é o botão de envio. O rótulo "Entrar" fica visível
+                         para ninguém depender só do desenho para entender que é clicável. -->
+                    <button type="submit" id="enviar" class="login__lapiseira" aria-label="Entrar na conta">
+                        <?php
+                            $classe_lapiseira = 'login__lapiseira-desenho';
+                            include __DIR__ . '/../includes/lapiseira.php';
+                        ?>
+                        <span class="login__lapiseira-rotulo" aria-hidden="true">Entrar</span>
+                    </button>
                 </form>
             </div>
         </div>

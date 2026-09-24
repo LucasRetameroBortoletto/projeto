@@ -16,6 +16,7 @@ $voltar = 'index.php' . ($filtros_atuais ? '?' . http_build_query($filtros_atuai
 
 $titulo = 'Lapisari · Lapiseiras de coleção';
 $estilos = ['vitrine.css'];
+$scripts = ['animacoes.js'];
 $pagina = 'inicio';
 include __DIR__ . '/includes/head.php';
 ?>
@@ -34,6 +35,16 @@ include __DIR__ . '/includes/head.php';
                         pelo equilíbrio na mão e pela história de cada modelo.
                     </p>
                 </div>
+
+                <!-- Traço de grafite: desenhado aos poucos conforme a página rola
+                     (assets/js/animacoes.js). pathLength="1" faz o comprimento do
+                     traço valer 1, então o JS trabalha com porcentagem (0 a 1)
+                     sem precisar medir o path. -->
+                <svg class="traco-grafite" viewBox="0 0 1200 24" preserveAspectRatio="none"
+                     fill="none" aria-hidden="true" focusable="false">
+                    <path class="traco-grafite__linha" pathLength="1"
+                          d="M2 14 C 120 11, 240 15, 380 12 S 640 10, 780 13 S 1040 15, 1198 11"/>
+                </svg>
 
                 <div class="pilares">
                     <article class="pilar">
@@ -132,7 +143,7 @@ include __DIR__ . '/includes/head.php';
                         <?php endif; ?>
                     </div>
                 <?php else: ?>
-                    <div class="grade-produtos">
+                    <div class="grade-produtos" data-entrada-cards>
                         <?php foreach ($lapiseiras as $lapiseira): ?>
                             <article class="card-produto<?= $lapiseira['ativo'] ? '' : ' card-produto--inativo' ?>">
                                 <div class="card-produto__foto">
