@@ -4,6 +4,10 @@
 // então roda depois que o HTML inteiro já foi lido.
 // =====================================================================
 
+// Tudo dentro de uma função: as variáveis deste arquivo não se misturam
+// com as de outros scripts da mesma página.
+(function () {
+'use strict';
 
 // ---- Confirmação antes de enviar -------------------------------------
 // Qualquer <form data-confirmar="mensagem"> pede confirmação antes de enviar.
@@ -75,3 +79,5 @@ document.querySelectorAll('[data-aviso]').forEach(function (aviso) {
         fechar();
     });
 });
+
+})();

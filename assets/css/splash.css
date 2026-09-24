@@ -1,0 +1,155 @@
+/* =====================================================================
+   Lapisari · splash.css (Fase 3)
+   Tela de abertura: a assinatura escrita à mão ocupando 100vh.
+   Estados (classes postas pelo splash.js):
+     html.com-splash   splash visível, página travada
+     .splash--pronta   a escrita terminou: aparece o "role para baixo"
+     .splash--saindo   a assinatura voa até o header e o fundo recolhe
+   ===================================================================== */
+
+.splash {
+    display: none;
+}
+
+.com-splash .splash {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+}
+
+/* Enquanto a splash está na tela, a página não rola: o primeiro scroll
+   serve só para disparar a saída da splash */
+html.com-splash {
+    overflow: hidden;
+}
+
+/* O logotipo do header fica invisível (mas ocupando espaço) durante a splash:
+   o JS mede a posição dele para saber para onde a assinatura deve voar */
+.com-splash .cabecalho__marca {
+    visibility: hidden;
+}
+
+/* Fundo preto em tela cheia. Na saída, o clip-path recorta a parte de baixo
+   até sobrar só a altura do header: o fundo "recolhe" e vira o próprio header. */
+.splash__fundo {
+    position: absolute;
+    inset: 0;
+    background-color: var(--cor-preto);
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 1000ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.splash--saindo .splash__fundo {
+    clip-path: inset(0 0 calc(100% - var(--altura-header)) 0);
+}
+
+.splash__palco {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+
+/* A assinatura gigante. Traço mais fino no desenho porque ela é enorme
+   na tela (stroke-width em unidades do SVG, que são ampliadas junto). */
+.splash__assinatura {
+    width: min(70vw, 1080px);
+    height: auto;
+    color: var(--cor-sobre-preto);
+    stroke-width: 1.3;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+/* ---- Indicador "role para baixo" -------------------------------------- */
+.splash__indicador {
+    position: absolute;
+    left: 50%;
+    bottom: var(--esp-7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--esp-3);
+    color: var(--cor-sobre-preto-suave);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translate(-50%, 8px);
+    transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.splash--pronta .splash__indicador {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.splash--saindo .splash__indicador {
+    opacity: 0;
+    transition-duration: 200ms;
+}
+
+/* Linha vertical com um "grafite" descendo por ela, em loop */
+.splash__linha {
+    position: relative;
+    width: 1px;
+    height: 44px;
+    overflow: hidden;
+    background-color: rgba(245, 243, 238, 0.18);
+}
+
+.splash__linha::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 16px;
+    background-color: var(--cor-sobre-preto);
+    animation: splash-desce 1600ms cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes splash-desce {
+    0%   { transform: translateY(-16px); }
+    100% { transform: translateY(44px); }
+}
+
+/* ---- Header chegando ----------------------------------------------------
+   Quando a splash termina, botões e lapiseira do header aparecem suavemente
+   (a assinatura já chegou no lugar do logotipo). */
+.cabecalho--revelar .cabecalho__acoes,
+.cabecalho--revelar .cabecalho__lapiseira {
+    animation: splash-header-aparece 600ms ease both;
+}
+
+.cabecalho--revelar .cabecalho__lapiseira {
+    animation-delay: 120ms;
+}
+
+@keyframes splash-header-aparece {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Movimento reduzido: sem voo nem recolhimento, a splash só esmaece */
+@media (prefers-reduced-motion: reduce) {
+    .splash {
+        transition: opacity 300ms ease;
+    }
+
+    .splash--saindo {
+        opacity: 0;
+    }
+
+    .splash--saindo .splash__fundo {
+        clip-path: inset(0 0 0 0);
+    }
+
+    .splash__linha::after {
+        animation: none;
+        top: 14px;
+    }
+}

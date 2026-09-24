@@ -6,7 +6,13 @@ $texto_itens = $quantidade_carrinho === 1 ? '1 item' : $quantidade_carrinho . ' 
 <header class="cabecalho">
     <!-- Nome e lapiseira são elementos separados de propósito: nas próximas fases
          cada um é animado de forma independente (o nome na splash, a lapiseira no login). -->
-    <a href="<?= url('index.php') ?>" class="cabecalho__marca" aria-label="Lapisari, página inicial">Lapisari</a>
+    <a href="<?= url('index.php') ?>" class="cabecalho__marca" aria-label="Lapisari, página inicial">
+        <?php
+            // Logotipo em SVG (includes/assinatura.php): o mesmo traço escrito na splash
+            $classe_assinatura = 'cabecalho__assinatura';
+            include __DIR__ . '/assinatura.php';
+        ?>
+    </a>
 
     <?php
         // Lapiseira em SVG (includes/lapiseira.php): o mesmo desenho é usado no login

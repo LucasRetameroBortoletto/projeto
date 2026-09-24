@@ -8,6 +8,11 @@
 //    (botão traseiro afunda, grafite avança) e só então o formulário é enviado.
 // =====================================================================
 
+// Tudo dentro de uma função: as variáveis deste arquivo não se misturam
+// com as de outros scripts da mesma página.
+(function () {
+'use strict';
+
 const form = document.querySelector('#formulario');
 const campoEmail = document.querySelector('#email');
 const campos = [campoEmail, document.querySelector('#password')];
@@ -139,3 +144,5 @@ form.addEventListener('submit', function (event) {
         form.submit();
     }, DURACAO_CLIQUE);
 });
+
+})();

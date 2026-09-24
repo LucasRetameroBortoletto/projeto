@@ -11,6 +11,11 @@
 //   vez por quadro (requestAnimationFrame).
 // =====================================================================
 
+// Tudo dentro de uma função: as variáveis deste arquivo não se misturam
+// com as de outros scripts da mesma página.
+(function () {
+'use strict';
+
 const menosMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
@@ -233,3 +238,5 @@ if (grade && !menosMovimento) {
         observador.observe(card);
     });
 }
+
+})();

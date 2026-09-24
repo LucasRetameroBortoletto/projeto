@@ -51,11 +51,13 @@
 
 .login__marca {
     display: inline-block;
-    font-family: var(--fonte-assinatura);
-    font-size: 72px;
-    line-height: 1.1;
     color: var(--cor-sobre-preto);
-    text-decoration: none;
+}
+
+.login__assinatura {
+    height: 110px;
+    width: auto;
+    margin: 0 auto;
 }
 
 .login__titulo {

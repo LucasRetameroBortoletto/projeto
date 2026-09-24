@@ -41,7 +41,12 @@ include __DIR__ . '/../includes/head.php';
              para caber inteiro na tela sem rolar -->
         <div class="login__cartao">
             <div class="login__apresentacao">
-                <a href="<?= url('index.php') ?>" class="login__marca" aria-label="Lapisari, página inicial">Lapisari</a>
+                <a href="<?= url('index.php') ?>" class="login__marca" aria-label="Lapisari, página inicial">
+                    <?php
+                        $classe_assinatura = 'login__assinatura';
+                        include __DIR__ . '/../includes/assinatura.php';
+                    ?>
+                </a>
                 <h1 class="login__titulo">Bem-vindo</h1>
                 <p class="login__subtitulo">Faça login para continuar</p>
 

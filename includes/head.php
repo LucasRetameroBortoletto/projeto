@@ -4,11 +4,16 @@
 //   $titulo  -> texto da aba do navegador
 //   $estilos -> CSS extras de assets/css/ (ex.: ['vitrine.css'])
 //   $scripts -> JS extras de assets/js/ (ex.: ['login.js'])
+//   $scripts_inicio -> JS que precisa rodar ANTES da página ser desenhada
+//                      (sem defer; use só para arquivos minúsculos)
 $estilos = $estilos ?? [];
 $scripts = $scripts ?? [];
+$scripts_inicio = $scripts_inicio ?? [];
+//   $classes_html -> classes extras no <html> (ex.: 'sem-splash')
+$classes_html = $classes_html ?? '';
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"<?= $classes_html ? ' class="' . e($classes_html) . '"' : '' ?>>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,6 +28,10 @@ $scripts = $scripts ?? [];
     <link rel="stylesheet" href="<?= asset('assets/css/layout.css') ?>">
     <?php foreach ($estilos as $arquivo_css): ?>
     <link rel="stylesheet" href="<?= asset('assets/css/' . $arquivo_css) ?>">
+    <?php endforeach; ?>
+
+    <?php foreach ($scripts_inicio as $arquivo_js): ?>
+    <script src="<?= asset('assets/js/' . $arquivo_js) ?>"></script>
     <?php endforeach; ?>
 
     <!-- defer: o script baixa em paralelo e só roda depois que o HTML foi lido -->

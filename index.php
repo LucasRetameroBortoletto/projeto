@@ -15,12 +15,35 @@ $filtros_atuais = array_filter(['bitola' => $bitola, 'ordem' => $ordem !== 'novi
 $voltar = 'index.php' . ($filtros_atuais ? '?' . http_build_query($filtros_atuais) : '') . '#vitrine';
 
 $titulo = 'Lapisari · Lapiseiras de coleção';
-$estilos = ['vitrine.css'];
-$scripts = ['animacoes.js'];
+$estilos = ['vitrine.css', 'splash.css'];
+$scripts = ['animacoes.js', 'splash.js'];
+$scripts_inicio = ['splash-inicio.js'];
+// Com um aviso para mostrar (ex.: "Logout realizado"), não mostramos a splash:
+// ela cobriria a mensagem
+$classes_html = isset($_SESSION['aviso']) ? 'sem-splash' : '';
 $pagina = 'inicio';
 include __DIR__ . '/includes/head.php';
 ?>
 <body>
+    <!-- Splash (Fase 3): "Lapisari" escrito à mão ocupando a tela.
+         Só aparece quando o splash-inicio.js marca <html class="com-splash">.
+         No primeiro scroll, a assinatura encolhe até o logotipo do header
+         e o fundo preto recolhe até virar o próprio header (assets/js/splash.js).
+         aria-hidden: é decorativa; o nome acessível fica no link do header. -->
+    <div class="splash" aria-hidden="true" data-splash>
+        <div class="splash__fundo"></div>
+        <div class="splash__palco">
+            <?php
+                $classe_assinatura = 'splash__assinatura';
+                include __DIR__ . '/includes/assinatura.php';
+            ?>
+        </div>
+        <div class="splash__indicador">
+            <span>Role para baixo</span>
+            <span class="splash__linha"></span>
+        </div>
+    </div>
+
     <?php include __DIR__ . '/includes/header.php'; ?>
 
     <main>
