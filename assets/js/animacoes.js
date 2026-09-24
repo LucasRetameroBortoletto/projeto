@@ -14,112 +14,132 @@
 const menosMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
-// ---- 1) Traço de grafite ---------------------------------------------
-const traco = document.querySelector('.traco-grafite');
+// ---- 1) Seção conceitual: traço + pilares, um de cada vez --------------
+// A seção fica "presa" na tela (CSS .conceito--fixada + position: sticky)
+// e a rolagem dentro dela vira uma linha do tempo de 0 a 1:
+//
+//   0.00 ─ 0.16   traço de grafite é desenhado
+//   0.20 ─ 0.42   pilar 1 é montado
+//   0.46 ─ 0.68   pilar 2 é montado
+//   0.72 ─ 0.94   pilar 3 é montado
+//   0.94 ─ 1.00   pausa com tudo completo, antes de a página seguir
+//
+// Dentro de cada pilar, as etapas também têm seus trechos (ETAPAS_PILAR).
+// Os valores são calculados aqui e aplicados direto nos elementos, sem
+// depender de contas em CSS (que nem todo navegador aceita com números puros).
+const secaoConceito = document.querySelector('.conceito');
+const traco = document.querySelector('.traco-grafite__linha');
+const pilares = Array.from(document.querySelectorAll('[data-pilares] .pilar'));
 
-if (traco && menosMovimento) {
-    // Sem animação: a linha já aparece completa
-    traco.style.setProperty('--progresso', 1);
-} else if (traco) {
-    let quadroAgendado = false;
+const TRECHO_TRACO = [0, 0.16];
+const TRECHOS_PILARES = [[0.20, 0.42], [0.46, 0.68], [0.72, 0.94]];
 
-    // Progresso de 0 a 1 conforme o scroll:
-    // - início: quando o traço está a 90% da altura da janela (entrando por baixo).
-    //   Se ele já aparece na tela ao abrir a página, o início é a posição de
-    //   abertura, para o desenho começar do zero no primeiro scroll.
-    // - fim: depois de rolar mais 45% da altura da janela.
-    function atualizarTraco() {
-        quadroAgendado = false;
+// Etapas dentro de um pilar (0 a 1 = o trecho daquele pilar)
+const ETAPAS_PILAR = {
+    linha:  [0.00, 0.35],
+    icone:  [0.15, 0.60],
+    numero: [0.40, 0.70],
+    titulo: [0.50, 0.85],
+    texto:  [0.60, 1.00],
+};
 
-        const alturaJanela = window.innerHeight;
-        const topo = traco.getBoundingClientRect().top;          // posição na tela agora
-        const topoNaPagina = topo + window.scrollY;              // posição com scroll = 0
-        const inicio = Math.min(alturaJanela * 0.9, topoNaPagina);
-        const fim = inicio - alturaJanela * 0.45;
-
-        let progresso = (inicio - topo) / (inicio - fim);
-        progresso = Math.min(Math.max(progresso, 0), 1); // limita entre 0 e 1
-
-        traco.style.setProperty('--progresso', progresso.toFixed(4));
-    }
-
-    // O evento scroll dispara muitas vezes por quadro. Em vez de recalcular
-    // em todas, agendamos um único cálculo para o próximo quadro de desenho.
-    function aoRolar() {
-        if (!quadroAgendado) {
-            quadroAgendado = true;
-            requestAnimationFrame(atualizarTraco);
-        }
-    }
-
-    // Só escuta o scroll enquanto o traço está (quase) na tela
-    const observadorTraco = new IntersectionObserver(function (entradas) {
-        if (entradas[0].isIntersecting) {
-            window.addEventListener('scroll', aoRolar, { passive: true });
-            aoRolar();
-        } else {
-            window.removeEventListener('scroll', aoRolar);
-            aoRolar(); // acerta o estado final (0 ou 1) ao sair da tela
-        }
-    }, { rootMargin: '100px 0px' });
-
-    observadorTraco.observe(traco);
-    window.addEventListener('resize', aoRolar);
-    atualizarTraco();
+// Quanto do trecho [inicio, fim] já passou, de 0 a 1
+function trecho(valor, inicio, fim) {
+    return Math.min(Math.max((valor - inicio) / (fim - inicio), 0), 1);
 }
 
+// Suaviza o movimento: começa rápido e pousa devagar (ease-out cúbico)
+function suavizar(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
 
-// ---- 1b) Pilares montados pelo scroll ----------------------------------
-// Mesmo raciocínio do traço: cada pilar recebe --p de 0 a 1 conforme rola.
-// O CSS transforma esse número nas etapas (linha, ícone, texto).
-// As colunas são escalonadas: a segunda começa um pouco depois da primeira,
-// a terceira um pouco depois da segunda.
-const grupoPilares = document.querySelector('[data-pilares]');
+// Desenha um traço SVG com pathLength="1": 0 = invisível, 1 = completo.
+// Usa o atributo stroke-dashoffset, que todos os navegadores aceitam com número.
+// O espaço do padrão é 2 (e não 1) para sobrar folga: com "1 1", o
+// arredondamento do navegador deixava um pontinho visível no fim da linha.
+function desenhar(elemento, quanto) {
+    elemento.setAttribute('stroke-dasharray', '1 2');
+    elemento.setAttribute('stroke-dashoffset', (1 - quanto).toFixed(4));
+    elemento.style.visibility = quanto > 0 ? 'visible' : 'hidden';
+}
 
-if (grupoPilares && !menosMovimento) {
-    const pilares = Array.from(grupoPilares.querySelectorAll('.pilar'));
-    let pilaresAgendado = false;
+// Prepara os elementos de cada pilar uma vez só
+const partesPilares = pilares.map(function (pilar) {
+    return {
+        pilar: pilar,
+        tracosIcone: Array.from(pilar.querySelectorAll('.pilar__icone [pathLength]')),
+        numero: pilar.querySelector('.pilar__numero'),
+        titulo: pilar.querySelector('.pilar__titulo'),
+        texto: pilar.querySelector('.pilar__texto'),
+    };
+});
 
-    function atualizarPilares() {
-        pilaresAgendado = false;
+function aplicarPilar(partes, t) {
+    const linha = suavizar(trecho(t, ETAPAS_PILAR.linha[0], ETAPAS_PILAR.linha[1]));
+    const icone = trecho(t, ETAPAS_PILAR.icone[0], ETAPAS_PILAR.icone[1]);
 
-        const alturaJanela = window.innerHeight;
-        const topo = grupoPilares.getBoundingClientRect().top;
-        const topoNaPagina = topo + window.scrollY;
-        // Começa quando os pilares entram por baixo (ou, se já aparecem ao
-        // abrir a página, a partir da posição de abertura)
-        const inicio = Math.min(alturaJanela * 0.92, topoNaPagina);
-        // Termina quando os pilares chegam a 25% da altura da janela: o último
-        // pilar fica completo enquanto ainda está bem visível, em qualquer tela
-        const total = Math.max(inicio - alturaJanela * 0.25, 200);
-        const escalonamento = total * 0.12;               // atraso entre colunas
-        const distancia = total - 2 * escalonamento;      // quanto rolar para montar um pilar
+    partes.pilar.style.setProperty('--linha', linha.toFixed(4));
+    partes.pilar.style.setProperty('--icone', Math.min(icone * 4, 1).toFixed(4)); // aparece logo no início do desenho
+    partes.tracosIcone.forEach(function (tracoIcone) {
+        desenhar(tracoIcone, suavizar(icone));
+    });
 
-        pilares.forEach(function (pilar, indice) {
-            let p = (inicio - topo - indice * escalonamento) / distancia;
-            p = Math.min(Math.max(p, 0), 1);
-            pilar.style.setProperty('--p', p.toFixed(4));
+    ['numero', 'titulo', 'texto'].forEach(function (nome) {
+        const etapa = ETAPAS_PILAR[nome];
+        partes[nome].style.setProperty('--t', suavizar(trecho(t, etapa[0], etapa[1])).toFixed(4));
+    });
+}
+
+if (secaoConceito && menosMovimento) {
+    // Movimento reduzido: sem seção presa, tudo já completo
+    if (traco) {
+        desenhar(traco, 1);
+    }
+} else if (secaoConceito) {
+    secaoConceito.classList.add('conceito--fixada');
+
+    let agendado = false;
+
+    function atualizarConceito() {
+        agendado = false;
+
+        // Quanto já se rolou dentro da seção, de 0 (topo da seção encostado no
+        // header) a 1 (fim da seção, quando o conteúdo volta a rolar)
+        const alturaHeader = document.querySelector('.cabecalho').offsetHeight;
+        const caixa = secaoConceito.getBoundingClientRect();
+        const percurso = secaoConceito.offsetHeight - (window.innerHeight - alturaHeader);
+        const progresso = trecho(alturaHeader - caixa.top, 0, percurso);
+
+        if (traco) {
+            desenhar(traco, suavizar(trecho(progresso, TRECHO_TRACO[0], TRECHO_TRACO[1])));
+        }
+        partesPilares.forEach(function (partes, indice) {
+            const faixa = TRECHOS_PILARES[indice] || TRECHOS_PILARES[TRECHOS_PILARES.length - 1];
+            aplicarPilar(partes, trecho(progresso, faixa[0], faixa[1]));
         });
     }
 
-    function aoRolarPilares() {
-        if (!pilaresAgendado) {
-            pilaresAgendado = true;
-            requestAnimationFrame(atualizarPilares);
+    // O scroll dispara muitas vezes por quadro; calculamos no máximo uma vez
+    // por quadro de desenho (requestAnimationFrame)
+    function aoRolar() {
+        if (!agendado) {
+            agendado = true;
+            requestAnimationFrame(atualizarConceito);
         }
     }
 
+    // Só escuta o scroll enquanto a seção está na tela
     new IntersectionObserver(function (entradas) {
         if (entradas[0].isIntersecting) {
-            window.addEventListener('scroll', aoRolarPilares, { passive: true });
+            window.addEventListener('scroll', aoRolar, { passive: true });
         } else {
-            window.removeEventListener('scroll', aoRolarPilares);
+            window.removeEventListener('scroll', aoRolar);
         }
-        aoRolarPilares();
-    }, { rootMargin: '100px 0px' }).observe(grupoPilares);
+        aoRolar(); // acerta o estado final ao entrar ou sair
+    }).observe(secaoConceito);
 
-    window.addEventListener('resize', aoRolarPilares);
-    atualizarPilares();
+    window.addEventListener('resize', aoRolar);
+    atualizarConceito();
 }
 
 

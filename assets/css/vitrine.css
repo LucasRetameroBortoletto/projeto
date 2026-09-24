@@ -27,13 +27,13 @@
 }
 
 /* ---- Traço de grafite (Fase 2) --------------------------------------
-   Técnica: stroke-dasharray + stroke-dashoffset.
-   - dasharray 1 = um traço do tamanho da linha inteira (pathLength="1" no SVG)
-     seguido de um espaço do mesmo tamanho.
-   - dashoffset empurra esse padrão: 1 = só o espaço aparece (linha invisível),
-     0 = o traço cobre tudo (linha completa).
-   O JS atualiza a variável --progresso (0 a 1) conforme o scroll, e o
-   dashoffset vira 1 - progresso: a linha "é desenhada" da esquerda para a direita. */
+   Técnica: stroke-dasharray + stroke-dashoffset, aplicados pelo animacoes.js
+   como atributos do SVG.
+   - pathLength="1" faz o comprimento da linha valer 1.
+   - dasharray "1 1" = um traço do tamanho da linha inteira + um espaço igual.
+   - dashoffset empurra esse padrão: 1 = só o espaço aparece (invisível),
+     0 = o traço cobre tudo. O JS vai de 1 a 0 conforme o scroll.
+   Sem JS, nenhum atributo é aplicado e a linha aparece completa. */
 .traco-grafite {
     width: 100%;
     height: 24px;
@@ -46,8 +46,6 @@
     stroke-width: 1.4;
     stroke-linecap: round;
     vector-effect: non-scaling-stroke; /* espessura fixa mesmo com o SVG esticado */
-    stroke-dasharray: 1 1;
-    stroke-dashoffset: calc(1 - var(--progresso, 1));
     opacity: 0.75;
 }
 
@@ -64,18 +62,12 @@
 }
 
 /* ---- Pilares montados pelo scroll --------------------------------------
-   O animacoes.js define --p (0 a 1) em cada pilar conforme a página rola.
-   Um único número controla tudo, dividido em etapas com clamp():
-     0.00 a 0.50  a linha do topo cresce da esquerda para a direita
-     0.15 a 0.65  o ícone é desenhado (mesma técnica do traço de grafite)
-     0.35 a 1.00  número, título e texto sobem e aparecem, um após o outro
-   Sem JS, --p vale 1 e o pilar aparece completo. */
-.pilar {
-    --p: 1;
-    --linha: clamp(0, calc(var(--p) * 2), 1);
-    --icone: clamp(0, calc((var(--p) - 0.15) * 2), 1);
-}
-
+   O animacoes.js calcula, para cada pilar, quanto de cada etapa já aconteceu
+   e grava em variáveis (0 = não começou, 1 = completo):
+     --linha   a linha do topo cresce da esquerda para a direita
+     --icone   o ícone aparece (o traço do ícone é desenhado pelo próprio JS)
+     --t       usada por número, título e texto, cada um com seu valor
+   Sem JS, todas valem 1 e o pilar aparece completo. */
 .pilar::before {
     content: "";
     position: absolute;
@@ -84,27 +76,39 @@
     right: 0;
     height: 1px;
     background-color: var(--cor-linha-forte);
-    transform: scaleX(var(--linha));
+    transform: scaleX(var(--linha, 1));
     transform-origin: left center;
 }
 
-.pilar__icone * {
-    stroke-dasharray: 1 1;
-    stroke-dashoffset: calc(1 - var(--icone));
+.pilar__icone {
+    opacity: var(--icone, 1);
 }
-
-/* Cada texto começa num ponto diferente do progresso (--inicio),
-   criando a cascata: número, depois título, depois parágrafo. */
-.pilar__numero { --inicio: 0.35; }
-.pilar__titulo { --inicio: 0.45; }
-.pilar__texto  { --inicio: 0.55; }
 
 .pilar__numero,
 .pilar__titulo,
 .pilar__texto {
-    --t: clamp(0, calc((var(--p) - var(--inicio)) * 2.5), 1);
-    opacity: var(--t);
-    transform: translateY(calc((1 - var(--t)) * 22px));
+    opacity: var(--t, 1);
+    transform: translateY(calc((1 - var(--t, 1)) * 24px));
+}
+
+/* ---- Seção conceitual "presa" na tela ---------------------------------
+   Com JS, a seção fica bem mais alta que a tela (--altura-palco) e o conteúdo
+   usa position: sticky: ele para no lugar enquanto a página rola por baixo.
+   Toda essa rolagem vira o "tempo" da animação: traço, pilar 1, pilar 2, pilar 3.
+   Quando a seção termina, o conteúdo volta a rolar normalmente. */
+.conceito--fixada {
+    --altura-palco: 320vh;
+    height: var(--altura-palco);
+    padding: 0;
+}
+
+.conceito--fixada > .container {
+    position: sticky;
+    top: var(--altura-header);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: calc(100vh - var(--altura-header));
 }
 
 .pilar__icone {
