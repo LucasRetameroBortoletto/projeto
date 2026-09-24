@@ -250,25 +250,66 @@
 
 
 /* ---- Entrada dos cards (Fase 2) ---------------------------------------
-   O animacoes.js põe .animar-entrada na grade e .visivel em cada card
-   quando ele entra na tela (IntersectionObserver). Sem JS, nada disso é
-   aplicado e os cards aparecem normalmente.
-   --atraso escalona os cards de uma mesma linha (0, 1, 2, 3 × 80 ms). */
-.animar-entrada .card-produto {
+   Três camadas, cada uma com seu tempo, como numa vitrine sendo montada:
+   1. a foto é revelada de baixo para cima (clip-path funciona como uma cortina);
+   2. dentro dela, a imagem começa ampliada e assenta devagar (scale 1.18 -> 1);
+   3. marca, modelo, bitola, preço e botão sobem em cascata logo depois.
+
+   Estados (classes postas pelo animacoes.js):
+   .card-produto--oculto    estado inicial, antes de entrar na tela
+   .card-produto--animando  guarda as transições longas; é removida quando a
+                            entrada termina, para o hover voltar a ser rápido
+   --atraso  posição do card na linha (0, 1, 2, 3): cada card começa 120 ms
+             depois do anterior
+   --ordem   posição do texto dentro do card, para a cascata
+
+   Curvas: cubic-bezier(0.77, 0, 0.18, 1) acelera e freia forte (cortina);
+   cubic-bezier(0.16, 1, 0.3, 1) sai rápido e pousa suave ("ease-out-expo"). */
+
+.card-produto__info > :nth-child(1) { --ordem: 0; }
+.card-produto__info > :nth-child(2) { --ordem: 1; }
+.card-produto__info > :nth-child(3) { --ordem: 2; }
+.card-produto__info > :nth-child(4) { --ordem: 3; }
+.card-produto__acao                 { --ordem: 4; }
+
+.card-produto--animando .card-produto__foto {
+    /* Estado final explícito: o navegador só anima clip-path entre dois inset() */
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 1000ms cubic-bezier(0.77, 0, 0.18, 1);
+    transition-delay: calc(var(--atraso, 0) * 120ms);
+}
+
+.card-produto--animando .card-produto__foto img {
+    transition: transform 1600ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--atraso, 0) * 120ms);
+}
+
+.card-produto--animando .card-produto__info > *,
+.card-produto--animando .card-produto__acao {
+    transition: opacity 700ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--atraso, 0) * 120ms + 380ms + var(--ordem, 0) * 70ms);
+}
+
+.card-produto--oculto .card-produto__foto {
+    clip-path: inset(100% 0 0 0); /* recortada inteira: nada aparece */
+}
+
+.card-produto--oculto .card-produto__foto img {
+    transform: scale(1.18);
+}
+
+.card-produto--oculto .card-produto__info > *,
+.card-produto--oculto .card-produto__acao {
     opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 600ms ease, transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
-    transition-delay: calc(var(--atraso, 0) * 80ms);
+    transform: translateY(18px);
 }
 
-.animar-entrada .card-produto.visivel {
-    opacity: 1;
-    transform: none;
+/* O cabeçalho da vitrine (título e filtros) entra antes dos cards */
+.vitrine__topo--animando {
+    transition: opacity 800ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Menos movimento: sem deslocamento, só um fade rápido */
-@media (prefers-reduced-motion: reduce) {
-    .animar-entrada .card-produto {
-        transform: none;
-    }
+.vitrine__topo--oculto {
+    opacity: 0;
+    transform: translateY(18px);
 }

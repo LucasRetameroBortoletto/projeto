@@ -168,24 +168,80 @@
     border-bottom-color: currentColor;
 }
 
-/* Clique mecânico: o botão traseiro afunda (anda para dentro do corpo)
-   e o grafite avança pela ponta, como numa lapiseira de verdade.
-   Só mexemos em transform, que a placa de vídeo anima sem recalcular o layout.
-   :active cobre o mouse pressionado; .login__lapiseira--clique é posta pelo
-   login.js no envio (teclado com Enter também dispara). */
-.login__lapiseira .lapiseira__botao,
+/* ---- Grafite vivo -------------------------------------------------------
+   O login.js define --grafite (1 a 4) conforme o e-mail é digitado.
+   Usamos as propriedades individuais "scale" e "translate" (em vez de
+   "transform") para o crescimento e o clique não sobrescreverem um ao outro:
+   cada um mexe na sua propriedade e o navegador combina os dois.
+   transform-box: fill-box + origin à esquerda = o grafite cresce a partir
+   da ponta da lapiseira, para fora. */
+.login__lapiseira .lapiseira__grafite,
+.login__lapiseira .lapiseira__fragmento {
+    transform-box: fill-box;
+    transform-origin: left center;
+}
+
 .login__lapiseira .lapiseira__grafite {
-    transition: transform 120ms cubic-bezier(0.3, 0, 0.2, 1);
+    scale: var(--grafite, 1) 1;
+    color: var(--cor-sobre-preto);
+    transition: scale 220ms cubic-bezier(0.16, 1, 0.3, 1), translate 120ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+/* ---- Clique mecânico -----------------------------------------------------
+   O botão traseiro afunda (anda para dentro do corpo) e o grafite avança,
+   como numa lapiseira de verdade. :active cobre o mouse pressionado;
+   .login__lapiseira--clique é posta pelo login.js no envio (Enter também). */
+.login__lapiseira .lapiseira__botao {
+    transition: translate 120ms cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 .login__lapiseira:active .lapiseira__botao,
 .login__lapiseira--clique .lapiseira__botao {
-    transform: translateX(4px);
+    translate: 4px 0;
 }
 
 .login__lapiseira:active .lapiseira__grafite,
 .login__lapiseira--clique .lapiseira__grafite {
-    transform: translateX(3px);
+    translate: 3px 0;
+}
+
+/* ---- Grafite quebrando (login recusado) ---------------------------------
+   O login.js posiciona o fragmento sobre a metade de fora do grafite e
+   aplica .lapiseira__fragmento--caindo: o pedaço gira, cai e some,
+   enquanto o grafite que sobrou encolhe de uma vez (o "estalo"). */
+.lapiseira__fragmento--caindo {
+    transform-origin: left center;
+    animation: grafite-cai 950ms linear forwards;
+}
+
+/* Cada trecho tem sua própria curva: o estalo é rápido (sai para cima),
+   a queda acelera como gravidade (ease-in) e gira enquanto cai. */
+@keyframes grafite-cai {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg);
+        animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(3px, -5px) rotate(-18deg);   /* o estalo */
+        animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(12px, 46px) rotate(135deg);  /* a queda */
+    }
+}
+
+/* Tremida rápida da lapiseira inteira no momento da quebra */
+.login__lapiseira--quebrou .login__lapiseira-desenho {
+    animation: lapiseira-treme 280ms ease-out;
+}
+
+@keyframes lapiseira-treme {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-2px); }
+    60%      { transform: translateX(1.5px); }
 }
 
 .login__lapiseira:focus-visible,

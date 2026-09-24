@@ -5,7 +5,9 @@
 //   .lapiseira__corpo   corpo e clipe
 //   .lapiseira__grip    empunhadura serrilhada
 //   .lapiseira__ponta   cone e tubo guia
-//   .lapiseira__grafite o grafite (avança no clique)
+//   .lapiseira__grafite o grafite (avança no clique; no login cresce com o e-mail)
+//   .lapiseira__fragmento pedaço do grafite que se solta quando ele "quebra"
+//                        (invisível até o login.js usar)
 // Antes de incluir, defina $classe_lapiseira com a classe extra do lugar onde ela aparece.
 ?>
 <svg class="lapiseira <?= $classe_lapiseira ?? '' ?>" viewBox="0 0 300 24" fill="none" stroke="currentColor"
@@ -28,4 +30,5 @@
         <path d="M258 11.2 H276 V12.8 H258"/>
     </g>
     <path class="lapiseira__grafite" d="M276 12 H282" stroke-width="1.4"/>
+    <path class="lapiseira__fragmento" d="M279 12 H282" stroke-width="1.4" opacity="0"/>
 </svg>

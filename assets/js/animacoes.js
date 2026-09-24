@@ -70,38 +70,92 @@ if (traco && menosMovimento) {
 
 
 // ---- 2) Entrada dos cards --------------------------------------------
+// Por que a versão anterior falhava nos primeiros cards: eles já estavam na
+// tela ao abrir a página, então o observador os marcava como visíveis antes
+// do navegador pintar o estado escondido. Sem um "antes" pintado, não há
+// transição: o card simplesmente aparece. Agora:
+//   1) aplicamos o estado escondido;
+//   2) forçamos o navegador a calcular esse estado (leitura de offsetHeight);
+//   3) só revelamos dois quadros depois (requestAnimationFrame duplo),
+//      com uma pequena pausa extra para quem já estava na tela ao abrir.
 const grade = document.querySelector('[data-entrada-cards]');
+const topoVitrine = document.querySelector('.vitrine__topo');
 
-if (grade) {
-    const cards = grade.querySelectorAll('.card-produto');
+// Tempo total da entrada de um card (foto + cascata do texto), para
+// saber quando remover as transições longas
+const DURACAO_ENTRADA = 1700;
 
-    // Atraso escalonado: cards da mesma linha entram um após o outro.
-    // A posição na linha vem do topo do card: mesmo topo = mesma linha.
-    function definirAtrasos() {
-        let topoDaLinha = null;
-        let posicao = 0;
-        cards.forEach(function (card) {
-            const topo = card.offsetTop;
-            posicao = topo === topoDaLinha ? posicao + 1 : 0;
-            topoDaLinha = topo;
-            card.style.setProperty('--atraso', posicao);
-        });
+function revelarDepoisDaPintura(callback) {
+    requestAnimationFrame(function () {
+        requestAnimationFrame(callback);
+    });
+}
+
+if (grade && !menosMovimento) {
+    const cards = Array.from(grade.querySelectorAll('.card-produto'));
+
+    // Posição do card na linha (mesmo topo = mesma linha): vira o --atraso
+    let topoDaLinha = null;
+    let posicao = 0;
+    cards.forEach(function (card) {
+        const topo = card.offsetTop;
+        posicao = topo === topoDaLinha ? posicao + 1 : 0;
+        topoDaLinha = topo;
+        card.style.setProperty('--atraso', posicao);
+        card.classList.add('card-produto--oculto', 'card-produto--animando');
+    });
+
+    if (topoVitrine) {
+        topoVitrine.classList.add('vitrine__topo--oculto', 'vitrine__topo--animando');
     }
-    definirAtrasos();
 
-    // Só esconde os cards depois de saber que o JS está rodando
-    grade.classList.add('animar-entrada');
+    // Passo 2: obriga o navegador a aplicar os estilos escondidos agora
+    void grade.offsetHeight;
 
-    const observadorCards = new IntersectionObserver(function (entradas, observador) {
+    // Quem já está na tela ao abrir a página espera um instante,
+    // para a animação acontecer quando o usuário já está olhando
+    const inicioDaPagina = performance.now();
+    const PAUSA_INICIAL = 350;
+
+    function revelar(elemento, classeOculto, classeAnimando) {
+        const espera = Math.max(0, PAUSA_INICIAL - (performance.now() - inicioDaPagina));
+        setTimeout(function () {
+            revelarDepoisDaPintura(function () {
+                elemento.classList.remove(classeOculto);
+                // Terminada a entrada, devolve as transições normais (hover rápido)
+                const atraso = Number(elemento.style.getPropertyValue('--atraso')) || 0;
+                setTimeout(function () {
+                    elemento.classList.remove(classeAnimando);
+                }, DURACAO_ENTRADA + atraso * 120);
+            });
+        }, espera);
+    }
+
+    const observador = new IntersectionObserver(function (entradas) {
         entradas.forEach(function (entrada) {
-            if (entrada.isIntersecting) {
-                entrada.target.classList.add('visivel');
-                observador.unobserve(entrada.target); // anima uma vez só
+            if (!entrada.isIntersecting) {
+                return;
+            }
+            const elemento = entrada.target;
+            observador.unobserve(elemento); // anima uma vez só
+
+            if (elemento === topoVitrine) {
+                revelar(elemento, 'vitrine__topo--oculto', 'vitrine__topo--animando');
+            } else {
+                revelar(elemento, 'card-produto--oculto', 'card-produto--animando');
             }
         });
-    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    }, {
+        // Dispara quando 20% do card aparece, contando 8% acima da base da
+        // janela: o card entra um pouco "dentro" da tela antes de animar
+        threshold: 0.2,
+        rootMargin: '0px 0px -8% 0px',
+    });
 
+    if (topoVitrine) {
+        observador.observe(topoVitrine);
+    }
     cards.forEach(function (card) {
-        observadorCards.observe(card);
+        observador.observe(card);
     });
 }

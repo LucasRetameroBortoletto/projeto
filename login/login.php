@@ -78,8 +78,9 @@ include __DIR__ . '/../includes/head.php';
                     </div>
 
                     <!-- A lapiseira é o botão de envio. O rótulo "Entrar" fica visível
-                         para ninguém depender só do desenho para entender que é clicável. -->
-                    <button type="submit" id="enviar" class="login__lapiseira" aria-label="Entrar na conta">
+                         para ninguém depender só do desenho para entender que é clicável.
+                         login__lapiseira--erro (login recusado) faz o login.js quebrar o grafite. -->
+                    <button type="submit" id="enviar" class="login__lapiseira<?= isset($mensagem) ? ' login__lapiseira--erro' : '' ?>" aria-label="Entrar na conta">
                         <?php
                             $classe_lapiseira = 'login__lapiseira-desenho';
                             include __DIR__ . '/../includes/lapiseira.php';
