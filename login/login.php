@@ -6,6 +6,10 @@ if (usuario_logado()) {
     redirecionar('index.php');
 }
 
+// Quando o login vem do cartão do header (metamorfose), o formulário manda
+// "voltar" com a página onde a pessoa estava: o sucesso ou o erro voltam para lá.
+$voltar = caminho_retorno($_POST['voltar'] ?? '', 'index.php');
+
 if($_SERVER['REQUEST_METHOD'] == "POST") {
     $usuario = consultar_user($conexao, trim($_POST['email'] ?? ''));
 
@@ -22,9 +26,17 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
         $_SESSION['id'] = $usuario['id'];
         $_SESSION['papel'] = $usuario['papel'];
 
-        redirecionar('index.php'); //leva o usuário a index.php
+        definir_aviso('sucesso', 'Login realizado. Bem-vindo!');
+        redirecionar($voltar); //leva o usuário de volta à página onde estava (ou index.php)
     } else {
         $mensagem = "Usuário ou senha inválidos!!";
+
+        // Veio do cartão do header: volta para a mesma página com o cartão já
+        // aberto, a mensagem visível e o e-mail preenchido (includes/metamorfose.php)
+        if (isset($_POST['voltar'])) {
+            $_SESSION['login_erro'] = ['mensagem' => $mensagem, 'email' => $_POST['email'] ?? ''];
+            redirecionar($voltar);
+        }
     }
 }
 
@@ -70,7 +82,7 @@ include __DIR__ . '/../includes/head.php';
                 <?php endif; ?>
 
                 <!-- novalidate: a validação de campo vazio é feita pelo login.js, com o visual do site -->
-                <form action="" method="POST" id="formulario" class="login__formulario" novalidate>
+                <form action="" method="POST" id="formulario" class="login__formulario" novalidate data-form-login>
                     <div class="login__campo">
                         <label for="email">E-mail</label>
                         <input type="email" name="email" id="email" autocomplete="email"

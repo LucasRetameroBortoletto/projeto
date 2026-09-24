@@ -3,7 +3,12 @@
 $quantidade_carrinho = carrinho_quantidade();
 $texto_itens = $quantidade_carrinho === 1 ? '1 item' : $quantidade_carrinho . ' itens';
 ?>
-<header class="cabecalho">
+<?php
+// Login recusado vindo do cartão do header: o header já começa "transformado"
+// (escondido), porque o cartão é desenhado aberto (includes/metamorfose.php)
+$metamorfose_aberta = !usuario_logado() && isset($_SESSION['login_erro']);
+?>
+<header class="cabecalho<?= $metamorfose_aberta ? ' cabecalho--metamorfose' : '' ?>">
     <!-- Nome e lapiseira são elementos separados de propósito: nas próximas fases
          cada um é animado de forma independente (o nome na splash, a lapiseira no login). -->
     <a href="<?= url('index.php') ?>" class="cabecalho__marca" aria-label="Lapisari, página inicial">
@@ -24,7 +29,9 @@ $texto_itens = $quantidade_carrinho === 1 ? '1 item' : $quantidade_carrinho . ' 
         <?php if (usuario_logado()): ?>
             <a href="<?= url('login/logout.php') ?>" class="botao-cabecalho">Sair</a>
         <?php else: ?>
-            <a href="<?= url('login/login.php') ?>" class="botao-cabecalho botao-cabecalho--contorno" id="botao-entrar">Entrar</a>
+            <!-- Sem JS é um link para a página de login; com JS abre a metamorfose -->
+            <a href="<?= url('login/login.php') ?>" class="botao-cabecalho botao-cabecalho--contorno" id="botao-entrar"
+               aria-haspopup="dialog" data-abrir-metamorfose>Entrar</a>
         <?php endif; ?>
 
         <a href="<?= url('carrinho/index.php') ?>" class="botao-cabecalho botao-cabecalho--carrinho"
@@ -39,6 +46,8 @@ $texto_itens = $quantidade_carrinho === 1 ? '1 item' : $quantidade_carrinho . ' 
         </a>
     </nav>
 </header>
+
+<?php if (!usuario_logado()) include __DIR__ . '/metamorfose.php'; ?>
 
 <?php if (usuario_admin()) include __DIR__ . '/barra_admin.php'; ?>
 

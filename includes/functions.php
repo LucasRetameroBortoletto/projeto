@@ -27,7 +27,7 @@ const PASTA_UPLOADS = 'uploads/lapiseiras'; // relativo à raiz do projeto
 
 // Páginas para onde um formulário pode mandar o usuário de volta (campo "voltar").
 // Sem essa lista, alguém poderia usar o campo para redirecionar para outro site.
-const PAGINAS_RETORNO = ['index.php', 'app/select.php', 'app/delete.php', 'carrinho/index.php'];
+const PAGINAS_RETORNO = ['index.php', 'app/select.php', 'app/delete.php', 'carrinho/index.php', 'login/registerUser.php'];
 
 
 // =====================================================================
@@ -114,6 +114,15 @@ function pegar_aviso() {
 
 function usuario_logado() {
     return isset($_SESSION['id']);
+}
+
+// Caminho da página atual dentro do projeto (ex.: 'index.php?bitola=0.5'),
+// usado como "voltar" nos formulários do header
+function pagina_atual() {
+    $script = rawurldecode($_SERVER['SCRIPT_NAME'] ?? '');
+    $caminho = ltrim(substr($script, strlen(BASE_URL)), '/');
+    $consulta = $_SERVER['QUERY_STRING'] ?? '';
+    return $caminho . ($consulta !== '' ? '?' . $consulta : '');
 }
 
 function usuario_admin() {

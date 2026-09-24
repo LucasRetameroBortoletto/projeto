@@ -54,11 +54,12 @@ CRUD de lapiseiras com vitrine pública, login de usuários, área do administra
 │   ├── form_lapiseira.php     campos do formulário de lapiseira
 │   ├── lapiseira.php          a lapiseira em SVG (header e botão do login)
 │   ├── assinatura.php         "Lapisari" em SVG de linha única (TRAÇO PROVISÓRIO: troque aqui)
+│   ├── metamorfose.php        cartão de login que nasce do header
 │   ├── aviso.php              mensagens depois de salvar/excluir
 │   └── footer.php
 ├── assets/
-│   ├── css/                   base, layout, vitrine, forms, login, carrinho, splash
-│   ├── js/                    site.js (global), login.js, animacoes.js, splash.js e splash-inicio.js
+│   ├── css/                   base, layout, vitrine, forms, login, metamorfose, carrinho, splash
+│   ├── js/                    site.js (global), login.js, metamorfose.js, animacoes.js, splash.js e splash-inicio.js
 │   └── img/                   imagem padrão de produto
 ├── uploads/lapiseiras/        fotos enviadas pelo admin
 ├── database/

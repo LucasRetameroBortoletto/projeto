@@ -1,0 +1,152 @@
+/* =====================================================================
+   Lapisari · metamorfose.css (Fase 4)
+   Cartão de login que nasce do header. Aqui está só o estado FINAL
+   (cartão aberto e centralizado). O caminho entre o header e este estado
+   é calculado e animado pelo metamorfose.js (técnica FLIP).
+   ===================================================================== */
+
+.metamorfose {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+}
+
+.metamorfose[hidden] {
+    display: none;
+}
+
+/* Enquanto o cartão está aberto a página não rola por baixo */
+html.metamorfose-aberta {
+    overflow: hidden;
+}
+
+/* Header "virou" o cartão: fica invisível, mas ocupando o lugar
+   (o JS mede a posição dele para a volta).
+   Usamos opacity em vez de visibility: com visibility, o botão "Entrar"
+   podia continuar contando como invisível por um instante ao reaparecer,
+   e o navegador recusava devolver o foco a ele. */
+.cabecalho--metamorfose {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Nos primeiros instantes da abertura o header fica acima do cartão,
+   para os botões Entrar/Carrinho sumirem com fade à vista */
+.cabecalho--acima {
+    z-index: 400;
+}
+
+/* ---- Véu escuro com desfoque ------------------------------------------ */
+.metamorfose__veu {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(11, 11, 12, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* ---- Cartão ------------------------------------------------------------ */
+.metamorfose__cartao {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--esp-4);
+    width: 440px;
+    padding: var(--esp-6) var(--esp-7) var(--esp-5);
+    color: var(--cor-sobre-preto);
+    text-align: center;
+}
+
+/* O retângulo preto fica numa camada separada, atrás do conteúdo:
+   é ele que se estica do header até o cartão. Se o próprio cartão fosse
+   escalado, o texto dentro dele ficaria esticado junto. */
+.metamorfose__fundo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-color: var(--cor-preto);
+    border-radius: var(--raio);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    transform-origin: top left;
+}
+
+.metamorfose__cartao > :not(.metamorfose__fundo) {
+    position: relative;
+    z-index: 1;
+}
+
+.metamorfose__fechar {
+    position: absolute !important;
+    top: var(--esp-3);
+    right: var(--esp-3);
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--cor-sobre-preto-suave);
+    transition: color var(--transicao), background-color var(--transicao);
+}
+
+.metamorfose__fechar svg {
+    width: 14px;
+    height: 14px;
+}
+
+.metamorfose__fechar:hover {
+    color: var(--cor-sobre-preto);
+    background-color: rgba(245, 243, 238, 0.08);
+}
+
+.metamorfose__fechar:focus-visible,
+.metamorfose__rodape a:focus-visible,
+.metamorfose .login__lapiseira:focus-visible {
+    outline-color: var(--cor-prata);
+}
+
+/* Logotipo no topo do cartão (chega voando do header) */
+.metamorfose__assinatura {
+    height: 76px;
+    width: auto;
+    stroke-width: 3;
+    transform-origin: top left;
+}
+
+.metamorfose__titulo {
+    font-size: 26px;
+}
+
+.metamorfose__subtitulo {
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--cor-sobre-preto-suave);
+}
+
+.metamorfose .login__erro {
+    width: 100%;
+    margin: 0;
+}
+
+.metamorfose__formulario {
+    width: 100%;
+    text-align: left;
+}
+
+/* Lapiseira-botão (chega descendo do header) */
+.metamorfose__lapiseira {
+    max-width: 300px;
+    transform-origin: top left;
+}
+
+.metamorfose__rodape {
+    font-size: 13px;
+    color: var(--cor-sobre-preto-suave);
+}
+
+.metamorfose__rodape a {
+    color: var(--cor-sobre-preto);
+    text-underline-offset: 4px;
+}

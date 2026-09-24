@@ -13,10 +13,16 @@
 (function () {
 'use strict';
 
-const form = document.querySelector('#formulario');
-const campoEmail = document.querySelector('#email');
-const campos = [campoEmail, document.querySelector('#password')];
-const lapiseira = document.querySelector('#enviar');
+// O formulário de login aparece em dois lugares: na página login/login.php e
+// no cartão da metamorfose (header). Por isso buscamos pelo atributo
+// data-form-login e pelos nomes dos campos, e não por ids fixos.
+const form = document.querySelector('[data-form-login]');
+if (!form) {
+    return; // página sem formulário de login (ex.: usuário já logado)
+}
+const campoEmail = form.elements.email;
+const campos = [campoEmail, form.elements.password];
+const lapiseira = form.querySelector('.login__lapiseira');
 const grafite = lapiseira.querySelector('.lapiseira__grafite');
 const fragmento = lapiseira.querySelector('.lapiseira__fragmento');
 

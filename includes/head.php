@@ -11,6 +11,20 @@ $scripts = $scripts ?? [];
 $scripts_inicio = $scripts_inicio ?? [];
 //   $classes_html -> classes extras no <html> (ex.: 'sem-splash')
 $classes_html = $classes_html ?? '';
+
+// Quem não está logado pode abrir o login pelo header (metamorfose, Fase 4)
+// em qualquer página: carrega o CSS/JS do login e da metamorfose.
+// Na própria login.php o header não aparece, então o metamorfose.js não faz nada.
+if (!usuario_logado()) {
+    $estilos = array_values(array_unique(array_merge($estilos, ['login.css', 'metamorfose.css'])));
+    $scripts = array_values(array_unique(array_merge($scripts, ['login.js', 'metamorfose.js'])));
+
+    // Login recusado vindo do cartão: a página já abre com o cartão aberto,
+    // a rolagem travada e sem splash
+    if (isset($_SESSION['login_erro'])) {
+        $classes_html = trim($classes_html . ' metamorfose-aberta sem-splash');
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR"<?= $classes_html ? ' class="' . e($classes_html) . '"' : '' ?>>
