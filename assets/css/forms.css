@@ -1,0 +1,127 @@
+/* =====================================================================
+   Lapisari · forms.css
+   Páginas de formulário: cadastro/edição de lapiseira, cadastro de
+   usuário, consulta e exclusão por ID. Substitui o antigo style/styleForm.css.
+   ===================================================================== */
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-5);
+    padding: var(--esp-7);
+    background-color: var(--cor-superficie);
+    border: 1px solid var(--cor-linha);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra-card);
+}
+
+/* Duas colunas lado a lado (ex.: bitola + preço) */
+.formulario__linha {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--esp-5);
+}
+
+/* Formulário de uma linha só (buscar por ID) */
+.formulario--em-linha {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.formulario--em-linha .campo {
+    flex: 1;
+}
+
+.formulario__acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--esp-3);
+    padding-top: var(--esp-5);
+    border-top: 1px solid var(--cor-linha);
+}
+
+.formulario__rodape {
+    font-size: 14px;
+    color: var(--cor-texto-secundario);
+    text-align: center;
+}
+
+.formulario__rodape a {
+    color: var(--cor-texto);
+    text-underline-offset: 4px;
+}
+
+/* Foto: prévia ao lado do campo de arquivo */
+.campo-foto {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: var(--esp-5);
+    align-items: center;
+}
+
+.campo-foto__previa {
+    width: 112px;
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
+    padding: var(--esp-2);
+    background-color: var(--cor-foto);
+    border-radius: var(--raio);
+}
+
+.campo-foto .campo {
+    gap: var(--esp-2);
+}
+
+
+/* ---- Ficha de uma lapiseira (consulta por ID) ----------------------- */
+.ficha {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: var(--esp-6);
+    margin-top: var(--esp-6);
+    padding: var(--esp-6);
+    background-color: var(--cor-superficie);
+    border: 1px solid var(--cor-linha);
+    border-radius: var(--raio);
+}
+
+.ficha__foto {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
+    padding: var(--esp-4);
+    background-color: var(--cor-foto);
+}
+
+.ficha__modelo {
+    margin: var(--esp-1) 0 var(--esp-5);
+    font-size: 36px;
+}
+
+.ficha__dados {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--esp-2) var(--esp-6);
+    font-size: 15px;
+}
+
+.ficha__dados dt {
+    color: var(--cor-texto-suave);
+}
+
+.ficha__acoes {
+    display: flex;
+    gap: var(--esp-3);
+    margin-top: var(--esp-6);
+}
+
+.ficha__acoes form {
+    display: contents;
+}
+
+.resultado-vazio {
+    margin-top: var(--esp-6);
+    color: var(--cor-texto-secundario);
+    text-align: center;
+}

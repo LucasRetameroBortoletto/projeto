@@ -1,0 +1,159 @@
+/* =====================================================================
+   Lapisari · login.css
+   Tela de login: cartão preto centralizado sobre o off-white.
+   (Na Fase 4 este cartão passa a nascer do próprio header.)
+   ===================================================================== */
+
+.pagina-login {
+    padding-top: 0; /* esta página não tem o header fixo */
+}
+
+.pagina-login .aviso {
+    top: var(--esp-5);
+}
+
+.login {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: var(--esp-7) var(--esp-4);
+}
+
+.login__cartao {
+    width: 100%;
+    max-width: 420px;
+    padding: var(--esp-7) var(--esp-7) var(--esp-6);
+    background-color: var(--cor-preto);
+    border-radius: var(--raio);
+    box-shadow: 0 30px 80px rgba(11, 11, 12, 0.25);
+    color: var(--cor-sobre-preto);
+    text-align: center;
+}
+
+.login__marca {
+    display: inline-block;
+    font-family: var(--fonte-assinatura);
+    font-size: 60px;
+    line-height: 1.1;
+    color: var(--cor-sobre-preto);
+    text-decoration: none;
+}
+
+.login__titulo {
+    margin-top: var(--esp-4);
+    font-size: 30px;
+}
+
+.login__subtitulo {
+    margin-top: var(--esp-1);
+    font-size: 14px;
+    color: var(--cor-sobre-preto-suave);
+}
+
+.login__erro {
+    margin-top: var(--esp-5);
+    padding: var(--esp-3);
+    border: 1px solid rgba(214, 120, 108, 0.4);
+    border-radius: var(--raio);
+    color: #e3a097;
+    font-size: 14px;
+}
+
+.login__formulario {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-5);
+    margin-top: var(--esp-6);
+    text-align: left;
+}
+
+.login__campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+}
+
+.login__campo label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cor-sobre-preto-suave);
+}
+
+.login__campo input {
+    width: 100%;
+    padding: 12px 14px;
+    background-color: var(--cor-preto-elevado);
+    border: 1px solid #2e2f33;
+    border-radius: var(--raio);
+    color: var(--cor-sobre-preto);
+    font-size: 15px;
+    transition: border-color var(--transicao);
+}
+
+.login__campo input:hover {
+    border-color: #4a4c51;
+}
+
+.login__campo input:focus {
+    outline: none;
+    border-color: var(--cor-prata);
+}
+
+/* Classes aplicadas pelo login.js ao enviar */
+.login__campo input.campo-invalido {
+    border-color: #d6786c;
+}
+
+.login__campo input.campo-valido {
+    border-color: #5d6064;
+}
+
+.login__enviar {
+    margin-top: var(--esp-2);
+    padding: 14px;
+    border: 1px solid var(--cor-prata);
+    border-radius: var(--raio);
+    color: var(--cor-sobre-preto);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: background-color var(--transicao), color var(--transicao);
+}
+
+.login__enviar:hover {
+    background-color: var(--cor-sobre-preto);
+    color: var(--cor-preto);
+}
+
+.login__enviar:active {
+    background-color: var(--cor-prata);
+}
+
+.login__enviar:focus-visible,
+.login__marca:focus-visible,
+.login__rodape a:focus-visible {
+    outline-color: var(--cor-prata);
+}
+
+.login__rodape {
+    display: flex;
+    justify-content: center;
+    gap: var(--esp-3);
+    margin-top: var(--esp-6);
+    font-size: 13px;
+    color: var(--cor-sobre-preto-suave);
+}
+
+.login__rodape a {
+    color: var(--cor-sobre-preto);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transicao);
+}
+
+.login__rodape a:hover {
+    border-bottom-color: currentColor;
+}

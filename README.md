@@ -1,92 +1,113 @@
-# Gestão de Alunos
+# Lapisari
 
-Mini sistema CRUD para gerenciamento de alunos, desenvolvido em **PHP + HTML + PostgreSQL**.
+Loja online de lapiseiras de marcas oficiais, desenvolvida em **PHP + HTML + CSS + JavaScript + PostgreSQL**.
 
 ## 📋 Sobre o projeto
 
-Sistema simples de cadastro de alunos com as operações de **C**riar, **L**er, **A**tualizar e **D**eletar (CRUD), persistindo os dados em um banco PostgreSQL.
+CRUD de lapiseiras com vitrine pública, login de usuários, área do administrador e carrinho.
 
 ### Funcionalidades
 
-- **Cadastrar aluno** — nome, turma, data de nascimento e status (ativo/inativo)
-- **Excluir aluno** — a partir do ID
-- **Relatório** — lista todos os alunos cadastrados
-- **Consultar aluno** — busca um aluno específico pelo ID
-- **Atualizar aluno** — edita os dados de um aluno pelo ID
+- **Vitrine** — lista as lapiseiras disponíveis, com filtro por bitola e ordenação por novidades ou preço
+- **Carrinho** — adicionar e remover modelos (guardado na sessão, sem tabela no banco)
+- **Contas** — cadastro público de clientes e login com senha criptografada (`password_hash`)
+- **Administração** (só para usuários com papel `admin`):
+  - **Cadastrar lapiseira** — modelo, marca, bitola, preço, foto e se aparece na vitrine
+  - **Atualizar** — pelo ícone do card, pelo relatório ou pelo ID
+  - **Excluir** — pelo ícone do card, pelo relatório ou pelo ID (sempre via POST, com confirmação)
+  - **Relatório** — todas as lapiseiras, inclusive as fora da vitrine
+  - **Consultar** — busca uma lapiseira pelo ID
 
 ## 🚀 Tecnologias utilizadas
 
 - PHP (PDO)
 - PostgreSQL
-- HTML5 / CSS3
+- HTML5 / CSS3 / JavaScript puro (sem frameworks)
+- Google Fonts: Cormorant Garamond, Manrope e Mrs Saint Delafield
 
 ## 📁 Estrutura do projeto
 
 ```
-gestao-alunos-php/
-├── index.php
-├── app/
-│   ├── create.php
-│   ├── delete.php
-│   ├── select.php
-│   ├── select_where.php
-│   └── update.php
-├── database/
-│   └── connect_postgres.php
+├── index.php                  vitrine (seção conceitual + produtos)
+├── app/                       área do administrador
+│   ├── create.php             cadastrar lapiseira
+│   ├── update.php             atualizar lapiseira
+│   ├── delete.php             excluir lapiseira
+│   ├── select.php             relatório
+│   └── select_where.php       consultar por ID
+├── carrinho/
+│   ├── index.php              página do carrinho
+│   ├── adicionar.php          recebe o POST "Adicionar ao Carrinho"
+│   └── remover.php
+├── login/
+│   ├── login.php
+│   ├── logout.php
+│   ├── registerUser.php       cadastro de clientes
+│   ├── verifica_user.php      exige login
+│   └── verifica_admin.php     exige login de admin
 ├── includes/
-│   ├── header.php
-│   ├── footer.php
-│   └── functions.php
-└── extra/
-    ├── documentacao.md
-    └── tabela.md
+│   ├── config.php             BASE_URL e sessão
+│   ├── functions.php          consultas ao banco e funções de apoio
+│   ├── head.php               <head> compartilhado
+│   ├── header.php             header fixo
+│   ├── barra_admin.php        barra do administrador
+│   ├── form_lapiseira.php     campos do formulário de lapiseira
+│   ├── aviso.php              mensagens depois de salvar/excluir
+│   └── footer.php
+├── assets/
+│   ├── css/                   base, layout, vitrine, forms, login, carrinho
+│   ├── js/                    site.js (global) e login.js
+│   └── img/                   imagem padrão de produto
+├── uploads/lapiseiras/        fotos enviadas pelo admin
+├── database/
+│   ├── connect_postgres.php   credenciais do banco
+│   └── estrutura.sql          tabelas (rodar manualmente)
+└── extra/                     documentação
 ```
 
 ## 🗄️ Banco de dados
 
-Banco: `escola` | Tabela: `alunos1`
+Tabelas `usuarios` e `lapiseiras`. O script completo e comentado está em
+[`database/estrutura.sql`](database/estrutura.sql).
 
 ```mermaid
 erDiagram
-alunos1 {
+usuarios {
     int id pk
-    string nome
-    date nasc
-    string turma
+    string email
+    string senha
+    string papel
+}
+lapiseiras {
+    int id pk
+    string modelo
+    string marca
+    decimal bitola
+    decimal preco
+    string imagem
     bool ativo
+    timestamp criado_em
 }
 ```
 
 ## ⚙️ Como executar o projeto
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/gestao-alunos-php.git
+1. Rode `database/estrutura.sql` no seu PostgreSQL.
+2. Preencha as credenciais em `database/connect_postgres.php`.
+3. Coloque o projeto na pasta do servidor (ex.: `htdocs/MINI SISTEMA` no XAMPP) e acesse
+   `http://localhost/MINI SISTEMA/`.
+   - Se usar outra pasta, ajuste `BASE_URL` em `includes/config.php`.
+   - Com o servidor embutido (`php -S localhost:8000` dentro da pasta do projeto), use `BASE_URL` vazio (`''`).
+4. Dê permissão de escrita ao PHP na pasta `uploads/lapiseiras/`.
+5. Crie sua conta pelo site e torne-a administradora:
+   ```sql
+   UPDATE usuarios SET papel = 'admin' WHERE email = 'seu@email.com';
    ```
-2. Crie o banco `escola` no PostgreSQL e a tabela `alunos1` conforme o modelo acima.
-3. Configure as credenciais de conexão em `database/connect_postgres.php`:
-   ```php
-   $host = "seu_host";
-   $dbname = "escola";
-   $user = "seu_usuario";
-   $pass = "sua_senha";
-   ```
-4. Coloque a pasta do projeto no diretório do seu servidor local (ex: `htdocs` do XAMPP ou `www` do WAMP), ou rode o servidor embutido do PHP:
-   ```bash
-   php -S localhost:8000
-   ```
-5. Acesse no navegador: `http://localhost:8000`
 
 ## ✅ Requisitos
 
-- PHP 7.4+ com extensão `pdo_pgsql` habilitada
+- PHP 7.4+ com as extensões `pdo_pgsql`, `fileinfo` e `mbstring`
 - PostgreSQL
-
-## ⚠️ Observações
-
-- As credenciais do banco em `database/connect_postgres.php` estão fixas no código (hardcoded) — ideal migrar para variáveis de ambiente antes de subir o projeto publicamente.
-- O link "Início" no menu (`includes/header.php`) usa caminho absoluto (`/index.php`), enquanto os demais usam caminho relativo (`../app/...`) — pode causar inconsistência dependendo de onde o projeto for hospedado.
-
 
 ## 📄 Licença
 

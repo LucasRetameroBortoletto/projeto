@@ -1,0 +1,4 @@
+# As fotos enviadas não vão para o git; só a pasta e as regras de segurança
+*
+!.gitignore
+!.htaccess

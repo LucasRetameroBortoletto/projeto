@@ -1,0 +1,224 @@
+/* =====================================================================
+   Lapisari · vitrine.css
+   Página inicial: seção conceitual, filtros, grade e cards de produto.
+   ===================================================================== */
+
+/* ---- Seção conceitual ----------------------------------------------- */
+.conceito {
+    padding: var(--esp-10) 0;
+}
+
+.conceito__abertura {
+    max-width: 760px;
+    margin: 0 auto var(--esp-9);
+    text-align: center;
+}
+
+.conceito__titulo {
+    font-size: 54px;
+    font-weight: 400;
+}
+
+.conceito__texto {
+    max-width: 560px;
+    margin: var(--esp-5) auto 0;
+    color: var(--cor-texto-secundario);
+    font-size: 17px;
+}
+
+.pilares {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--esp-8);
+}
+
+/* Cada pilar tem só uma linha fina no topo: separa sem pesar */
+.pilar {
+    padding-top: var(--esp-6);
+    border-top: 1px solid var(--cor-linha-forte);
+}
+
+.pilar__icone {
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--esp-5);
+    color: var(--cor-texto);
+}
+
+.pilar__numero {
+    font-family: var(--fonte-titulo);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--cor-texto-suave);
+    margin-bottom: var(--esp-1);
+}
+
+.pilar__titulo {
+    font-size: 30px;
+    margin-bottom: var(--esp-3);
+}
+
+.pilar__texto {
+    color: var(--cor-texto-secundario);
+    font-size: 15px;
+}
+
+
+/* ---- Vitrine -------------------------------------------------------- */
+.vitrine {
+    padding: var(--esp-9) 0 var(--esp-10);
+    background-color: var(--cor-superficie);
+    border-top: 1px solid var(--cor-linha);
+    /* Ao pular para #vitrine, desconta a altura do header fixo para o título não ficar escondido */
+    scroll-margin-top: var(--altura-header);
+}
+
+.vitrine__topo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--esp-6);
+    padding-bottom: var(--esp-5);
+    border-bottom: 1px solid var(--cor-linha);
+}
+
+.vitrine__titulo {
+    font-size: 48px;
+}
+
+.vitrine__contagem {
+    margin: var(--esp-4) 0 var(--esp-6);
+    font-size: 13px;
+    color: var(--cor-texto-suave);
+}
+
+.vitrine__vazia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--esp-5);
+    padding: var(--esp-9) 0;
+    color: var(--cor-texto-secundario);
+    font-family: var(--fonte-titulo);
+    font-size: 24px;
+    text-align: center;
+}
+
+
+/* ---- Filtros -------------------------------------------------------- */
+.filtros {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--esp-4);
+}
+
+.filtros__campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+}
+
+.filtros__campo label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--cor-texto-suave);
+}
+
+.filtros .campo__controle {
+    min-width: 180px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 14px;
+}
+
+
+/* ---- Grade de produtos ---------------------------------------------- */
+/* auto-fill + minmax: o navegador coloca quantas colunas de no mínimo 260px
+   couberem. Com o container de até 1320px, isso dá 4 colunas de 1280 a 1920px. */
+.grade-produtos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--esp-7) var(--esp-6);
+}
+
+
+/* ---- Card de produto ------------------------------------------------ */
+.card-produto {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-produto__foto {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background-color: var(--cor-foto);
+    border-radius: var(--raio);
+}
+
+.card-produto__foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: var(--esp-5);
+    transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Aproximação leve da foto ao passar o mouse */
+.card-produto:hover .card-produto__foto img {
+    transform: scale(1.04);
+}
+
+.card-produto__foto .selo {
+    position: absolute;
+    top: var(--esp-3);
+    left: var(--esp-3);
+}
+
+/* Ícones de editar/excluir (só para admin) no canto da foto */
+.card-produto__admin {
+    position: absolute;
+    top: var(--esp-3);
+    right: var(--esp-3);
+    display: flex;
+    gap: var(--esp-2);
+}
+
+.card-produto__info {
+    flex: 1;
+    padding: var(--esp-5) 0 var(--esp-4);
+}
+
+.card-produto__marca {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--cor-texto-suave);
+}
+
+.card-produto__modelo {
+    margin-top: var(--esp-1);
+    font-size: 26px;
+}
+
+.card-produto__bitola {
+    margin-top: var(--esp-1);
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+.card-produto__preco {
+    margin-top: var(--esp-3);
+    font-family: var(--fonte-titulo);
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Lapiseira fora da vitrine: só o admin vê, esmaecida */
+.card-produto--inativo .card-produto__foto img,
+.card-produto--inativo .card-produto__info {
+    opacity: 0.5;
+}
