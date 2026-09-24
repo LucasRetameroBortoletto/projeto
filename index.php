@@ -46,12 +46,14 @@ include __DIR__ . '/includes/head.php';
                           d="M2 14 C 120 11, 240 15, 380 12 S 640 10, 780 13 S 1040 15, 1198 11"/>
                 </svg>
 
-                <div class="pilares">
+                <!-- Cada pilar é montado conforme o scroll (assets/js/animacoes.js define --p de 0 a 1):
+                     linha do topo cresce, ícone é desenhado, texto sobe. -->
+                <div class="pilares" data-pilares>
                     <article class="pilar">
                         <svg class="pilar__icone" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1"
                              stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M8 15 L14 7 H26 L32 15 L20 33 Z"/>
-                            <path d="M8 15 H32 M14 7 L17 15 L20 33 L23 15 L26 7"/>
+                            <path pathLength="1" d="M8 15 L14 7 H26 L32 15 L20 33 Z"/>
+                            <path pathLength="1" d="M8 15 H32 M14 7 L17 15 L20 33 L23 15 L26 7"/>
                         </svg>
                         <p class="pilar__numero">01</p>
                         <h2 class="pilar__titulo">Curadoria Premium</h2>
@@ -64,9 +66,9 @@ include __DIR__ . '/includes/head.php';
                     <article class="pilar">
                         <svg class="pilar__icone" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1"
                              stroke-linecap="round" aria-hidden="true" focusable="false">
-                            <circle cx="20" cy="20" r="12"/>
-                            <circle cx="20" cy="20" r="4"/>
-                            <path d="M20 4 V11 M20 29 V36 M4 20 H11 M29 20 H36"/>
+                            <circle pathLength="1" cx="20" cy="20" r="12"/>
+                            <circle pathLength="1" cx="20" cy="20" r="4"/>
+                            <path pathLength="1" d="M20 4 V11 M20 29 V36 M4 20 H11 M29 20 H36"/>
                         </svg>
                         <p class="pilar__numero">02</p>
                         <h2 class="pilar__titulo">Mecanismo &amp; Precisão</h2>
@@ -79,10 +81,10 @@ include __DIR__ . '/includes/head.php';
                     <article class="pilar">
                         <svg class="pilar__icone" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1"
                              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M20 4 L29 17 L24 31 H16 L11 17 Z"/>
-                            <path d="M20 4 V21"/>
-                            <circle cx="20" cy="23" r="2"/>
-                            <path d="M15 36 H25"/>
+                            <path pathLength="1" d="M20 4 L29 17 L24 31 H16 L11 17 Z"/>
+                            <path pathLength="1" d="M20 4 V21"/>
+                            <circle pathLength="1" cx="20" cy="23" r="2"/>
+                            <path pathLength="1" d="M15 36 H25"/>
                         </svg>
                         <p class="pilar__numero">03</p>
                         <h2 class="pilar__titulo">Atendimento Especializado</h2>

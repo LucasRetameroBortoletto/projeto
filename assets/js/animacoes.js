@@ -69,6 +69,60 @@ if (traco && menosMovimento) {
 }
 
 
+// ---- 1b) Pilares montados pelo scroll ----------------------------------
+// Mesmo raciocínio do traço: cada pilar recebe --p de 0 a 1 conforme rola.
+// O CSS transforma esse número nas etapas (linha, ícone, texto).
+// As colunas são escalonadas: a segunda começa um pouco depois da primeira,
+// a terceira um pouco depois da segunda.
+const grupoPilares = document.querySelector('[data-pilares]');
+
+if (grupoPilares && !menosMovimento) {
+    const pilares = Array.from(grupoPilares.querySelectorAll('.pilar'));
+    let pilaresAgendado = false;
+
+    function atualizarPilares() {
+        pilaresAgendado = false;
+
+        const alturaJanela = window.innerHeight;
+        const topo = grupoPilares.getBoundingClientRect().top;
+        const topoNaPagina = topo + window.scrollY;
+        // Começa quando os pilares entram por baixo (ou, se já aparecem ao
+        // abrir a página, a partir da posição de abertura)
+        const inicio = Math.min(alturaJanela * 0.92, topoNaPagina);
+        // Termina quando os pilares chegam a 25% da altura da janela: o último
+        // pilar fica completo enquanto ainda está bem visível, em qualquer tela
+        const total = Math.max(inicio - alturaJanela * 0.25, 200);
+        const escalonamento = total * 0.12;               // atraso entre colunas
+        const distancia = total - 2 * escalonamento;      // quanto rolar para montar um pilar
+
+        pilares.forEach(function (pilar, indice) {
+            let p = (inicio - topo - indice * escalonamento) / distancia;
+            p = Math.min(Math.max(p, 0), 1);
+            pilar.style.setProperty('--p', p.toFixed(4));
+        });
+    }
+
+    function aoRolarPilares() {
+        if (!pilaresAgendado) {
+            pilaresAgendado = true;
+            requestAnimationFrame(atualizarPilares);
+        }
+    }
+
+    new IntersectionObserver(function (entradas) {
+        if (entradas[0].isIntersecting) {
+            window.addEventListener('scroll', aoRolarPilares, { passive: true });
+        } else {
+            window.removeEventListener('scroll', aoRolarPilares);
+        }
+        aoRolarPilares();
+    }, { rootMargin: '100px 0px' }).observe(grupoPilares);
+
+    window.addEventListener('resize', aoRolarPilares);
+    atualizarPilares();
+}
+
+
 // ---- 2) Entrada dos cards --------------------------------------------
 // Por que a versão anterior falhava nos primeiros cards: eles já estavam na
 // tela ao abrir a página, então o observador os marcava como visíveis antes

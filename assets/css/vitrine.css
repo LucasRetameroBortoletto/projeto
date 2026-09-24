@@ -59,8 +59,52 @@
 
 /* Cada pilar tem só uma linha fina no topo: separa sem pesar */
 .pilar {
+    position: relative;
     padding-top: var(--esp-5);
-    border-top: 1px solid var(--cor-linha-forte);
+}
+
+/* ---- Pilares montados pelo scroll --------------------------------------
+   O animacoes.js define --p (0 a 1) em cada pilar conforme a página rola.
+   Um único número controla tudo, dividido em etapas com clamp():
+     0.00 a 0.50  a linha do topo cresce da esquerda para a direita
+     0.15 a 0.65  o ícone é desenhado (mesma técnica do traço de grafite)
+     0.35 a 1.00  número, título e texto sobem e aparecem, um após o outro
+   Sem JS, --p vale 1 e o pilar aparece completo. */
+.pilar {
+    --p: 1;
+    --linha: clamp(0, calc(var(--p) * 2), 1);
+    --icone: clamp(0, calc((var(--p) - 0.15) * 2), 1);
+}
+
+.pilar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--cor-linha-forte);
+    transform: scaleX(var(--linha));
+    transform-origin: left center;
+}
+
+.pilar__icone * {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: calc(1 - var(--icone));
+}
+
+/* Cada texto começa num ponto diferente do progresso (--inicio),
+   criando a cascata: número, depois título, depois parágrafo. */
+.pilar__numero { --inicio: 0.35; }
+.pilar__titulo { --inicio: 0.45; }
+.pilar__texto  { --inicio: 0.55; }
+
+.pilar__numero,
+.pilar__titulo,
+.pilar__texto {
+    --t: clamp(0, calc((var(--p) - var(--inicio)) * 2.5), 1);
+    opacity: var(--t);
+    transform: translateY(calc((1 - var(--t)) * 22px));
 }
 
 .pilar__icone {
