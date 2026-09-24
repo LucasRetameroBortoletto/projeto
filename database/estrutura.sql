@@ -2,7 +2,11 @@
 -- Lapisari: estrutura do banco (PostgreSQL)
 --
 -- Este arquivo é só referência: o código NÃO executa este script.
--- Rode-o manualmente no banco configurado em connect_postgres.php.
+-- Rode-o manualmente NO MESMO BANCO configurado em
+-- database/connect_postgres.php ($dbname).
+--
+-- Pode rodar quantas vezes quiser: cada comando só cria/altera
+-- o que ainda não existe (IF NOT EXISTS), sem apagar dados.
 -- =============================================================
 
 
@@ -14,26 +18,23 @@
 -- papel: 'cliente' (padrão) ou 'admin'. Só admin vê e usa os
 --        controles de cadastrar/editar/excluir lapiseiras.
 -- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usuarios (
+    id    SERIAL PRIMARY KEY,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL
+);
 
--- Se a tabela usuarios JÁ existe, rode apenas estas duas linhas:
+-- Se a tabela já existia na versão antiga (senha com 12 caracteres, sem papel),
+-- estas duas linhas a atualizam. Se ela acabou de ser criada, não mudam nada.
 ALTER TABLE usuarios ALTER COLUMN senha TYPE VARCHAR(255);
-ALTER TABLE usuarios ADD COLUMN papel VARCHAR(10) NOT NULL DEFAULT 'cliente'
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS papel VARCHAR(10) NOT NULL DEFAULT 'cliente'
     CHECK (papel IN ('cliente', 'admin'));
-
--- Se preferir criar a tabela do zero (em vez das linhas acima):
--- CREATE TABLE usuarios (
---     id    SERIAL PRIMARY KEY,
---     email VARCHAR(120) NOT NULL UNIQUE,
---     senha VARCHAR(255) NOT NULL,
---     papel VARCHAR(10)  NOT NULL DEFAULT 'cliente'
---           CHECK (papel IN ('cliente', 'admin'))
--- );
 
 
 -- -------------------------------------------------------------
 -- 2) Lapiseiras (substitui a antiga tabela alunos1)
 -- -------------------------------------------------------------
-CREATE TABLE lapiseiras (
+CREATE TABLE IF NOT EXISTS lapiseiras (
     id        SERIAL PRIMARY KEY,
     modelo    VARCHAR(120)  NOT NULL,
     marca     VARCHAR(60)   NOT NULL,
@@ -47,13 +48,17 @@ CREATE TABLE lapiseiras (
 
 -- -------------------------------------------------------------
 -- 3) Dados de exemplo (opcional, preços fictícios)
+--    Só entram se a tabela de lapiseiras estiver vazia.
 -- -------------------------------------------------------------
-INSERT INTO lapiseiras (modelo, marca, bitola, preco) VALUES
+INSERT INTO lapiseiras (modelo, marca, bitola, preco)
+SELECT * FROM (VALUES
     ('800',                'Rotring',   0.5, 389.90),
     ('Orenz Nero',         'Pentel',    0.3, 259.00),
     ('Graph 1000',         'Pentel',    0.5, 129.90),
     ('Kuru Toga Advance',  'Uni',       0.7, 119.00),
-    ('Mars Technico 780C', 'Staedtler', 2.0,  89.90);
+    ('Mars Technico 780C', 'Staedtler', 2.0,  89.90)
+) AS exemplos
+WHERE NOT EXISTS (SELECT 1 FROM lapiseiras);
 
 
 -- -------------------------------------------------------------
