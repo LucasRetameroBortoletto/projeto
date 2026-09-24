@@ -16,6 +16,7 @@ $mensagem_erro = function ($campo) use ($erros) {
     return isset($erros[$campo]) ? '<p class="campo__erro" id="erro-' . $campo . '">' . e($erros[$campo]) . '</p>' : '';
 };
 ?>
+<div class="formulario__linha">
 <div class="campo">
     <label for="modelo">Modelo</label>
     <input type="text" name="modelo" id="modelo" class="campo__controle" maxlength="120" required
@@ -28,6 +29,7 @@ $mensagem_erro = function ($campo) use ($erros) {
     <input type="text" name="marca" id="marca" class="campo__controle" maxlength="60" required
            value="<?= e($valores['marca']) ?>" <?= $atributos_erro('marca') ?>>
     <?= $mensagem_erro('marca') ?>
+</div>
 </div>
 
 <div class="formulario__linha">
@@ -50,6 +52,7 @@ $mensagem_erro = function ($campo) use ($erros) {
     </div>
 </div>
 
+<div class="formulario__linha">
 <div class="campo-foto">
     <!-- A prévia é atualizada pelo site.js assim que um arquivo é escolhido -->
     <img src="<?= $imagem_atual ? url($imagem_atual) : asset('assets/img/produto-sem-foto.svg') ?>" alt=""
@@ -79,3 +82,4 @@ $mensagem_erro = function ($campo) use ($erros) {
     </div>
     <?= $mensagem_erro('ativo') ?>
 </fieldset>
+</div>

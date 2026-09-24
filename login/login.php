@@ -37,37 +37,42 @@ include __DIR__ . '/../includes/head.php';
     <?php include __DIR__ . '/../includes/aviso.php'; ?>
 
     <main class="login">
+        <!-- Cartão horizontal: marca e boas-vindas à esquerda, formulário à direita,
+             para caber inteiro na tela sem rolar -->
         <div class="login__cartao">
-            <a href="<?= url('index.php') ?>" class="login__marca" aria-label="Lapisari, página inicial">Lapisari</a>
+            <div class="login__apresentacao">
+                <a href="<?= url('index.php') ?>" class="login__marca" aria-label="Lapisari, página inicial">Lapisari</a>
+                <h1 class="login__titulo">Bem-vindo</h1>
+                <p class="login__subtitulo">Faça login para continuar</p>
 
-            <h1 class="login__titulo">Bem-vindo</h1>
-            <p class="login__subtitulo">Faça login para continuar</p>
+                <footer class="login__rodape">
+                    <a href="<?= url('login/registerUser.php') ?>">Criar conta</a>
+                    <span aria-hidden="true">·</span>
+                    <a href="<?= url('index.php') ?>">Voltar à loja</a>
+                </footer>
+            </div>
 
-            <?php if (isset($mensagem)): ?>
-                <p class="login__erro" role="alert"><?= e($mensagem) ?></p>
-            <?php endif; ?>
+            <div class="login__area-formulario">
+                <?php if (isset($mensagem)): ?>
+                    <p class="login__erro" role="alert"><?= e($mensagem) ?></p>
+                <?php endif; ?>
 
-            <!-- novalidate: a validação de campo vazio é feita pelo login.js, com o visual do site -->
-            <form action="" method="POST" id="formulario" class="login__formulario" novalidate>
-                <div class="login__campo">
-                    <label for="email">E-mail</label>
-                    <input type="email" name="email" id="email" autocomplete="email"
-                           value="<?= e($_POST['email'] ?? '') ?>">
-                </div>
+                <!-- novalidate: a validação de campo vazio é feita pelo login.js, com o visual do site -->
+                <form action="" method="POST" id="formulario" class="login__formulario" novalidate>
+                    <div class="login__campo">
+                        <label for="email">E-mail</label>
+                        <input type="email" name="email" id="email" autocomplete="email"
+                               value="<?= e($_POST['email'] ?? '') ?>">
+                    </div>
 
-                <div class="login__campo">
-                    <label for="password">Senha</label>
-                    <input type="password" name="password" id="password" autocomplete="current-password">
-                </div>
+                    <div class="login__campo">
+                        <label for="password">Senha</label>
+                        <input type="password" name="password" id="password" autocomplete="current-password">
+                    </div>
 
-                <button type="submit" id="enviar" class="login__enviar">Entrar</button>
-            </form>
-
-            <footer class="login__rodape">
-                <a href="<?= url('login/registerUser.php') ?>">Criar conta</a>
-                <span aria-hidden="true">·</span>
-                <a href="<?= url('index.php') ?>">Voltar à loja</a>
-            </footer>
+                    <button type="submit" id="enviar" class="login__enviar">Entrar</button>
+                </form>
+            </div>
         </div>
     </main>
 </body>

@@ -52,6 +52,7 @@ include __DIR__ . '/../includes/head.php';
                     <p class="alerta alerta--erro" role="alert"><?= e($erros['geral']) ?></p>
                 <?php endif; ?>
 
+                <div class="formulario__linha">
                 <div class="campo">
                     <label for="email">E-mail</label>
                     <input type="email" name="email" id="email" class="campo__controle" required maxlength="120"
@@ -73,15 +74,15 @@ include __DIR__ . '/../includes/head.php';
                         <p class="campo__erro" id="erro-senha"><?= e($erros['password']) ?></p>
                     <?php endif; ?>
                 </div>
+                </div>
 
                 <div class="formulario__acoes">
+                    <p class="formulario__rodape">
+                        Já tem conta? <a href="<?= url('login/login.php') ?>">Entrar</a>
+                    </p>
                     <input type="reset" value="Limpar" class="botao botao--texto">
                     <input type="submit" value="Cadastrar" class="botao botao--primario">
                 </div>
-
-                <p class="formulario__rodape">
-                    Já tem conta? <a href="<?= url('login/login.php') ?>">Entrar</a>
-                </p>
             </form>
         </div>
     </main>
