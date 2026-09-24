@@ -45,10 +45,17 @@ include __DIR__ . '/../includes/head.php';
                 <h1 class="login__titulo">Bem-vindo</h1>
                 <p class="login__subtitulo">Faça login para continuar</p>
 
+                <!-- Ações secundárias como botões de verdade: fáceis de achar e de clicar -->
                 <footer class="login__rodape">
-                    <a href="<?= url('login/registerUser.php') ?>">Criar conta</a>
-                    <span aria-hidden="true">·</span>
-                    <a href="<?= url('index.php') ?>">Voltar à loja</a>
+                    <p class="login__convite">Ainda não tem conta?</p>
+                    <a href="<?= url('login/registerUser.php') ?>" class="login__botao-secundario">Criar conta</a>
+                    <a href="<?= url('index.php') ?>" class="login__voltar">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M10 3 L5 8 L10 13"/>
+                        </svg>
+                        Voltar à loja
+                    </a>
                 </footer>
             </div>
 

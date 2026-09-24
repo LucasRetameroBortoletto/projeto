@@ -157,20 +157,73 @@
 
 .login__rodape {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     gap: var(--esp-3);
-    margin-top: var(--esp-6);
+    margin-top: var(--esp-7);
+    padding-top: var(--esp-6);
+    border-top: 1px solid #2e2f33;
+}
+
+.login__convite {
     font-size: 14px;
     color: var(--cor-sobre-preto-suave);
 }
 
-.login__rodape a {
+/* "Criar conta": mesmo formato do botão Entrar, com contorno mais discreto,
+   para ficar claro que é uma ação, mas secundária */
+.login__botao-secundario {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    padding: 14px;
+    border: 1px solid #4a4c51;
+    border-radius: var(--raio);
     color: var(--cor-sobre-preto);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-align: center;
     text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color var(--transicao);
+    text-transform: uppercase;
+    transition: border-color var(--transicao), background-color var(--transicao), color var(--transicao);
 }
 
-.login__rodape a:hover {
-    border-bottom-color: currentColor;
+.login__botao-secundario:hover {
+    border-color: var(--cor-sobre-preto);
+    background-color: var(--cor-sobre-preto);
+    color: var(--cor-preto);
+}
+
+/* "Voltar à loja": link com seta, área de clique confortável */
+.login__voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-2);
+    margin-top: var(--esp-2);
+    padding: var(--esp-2) var(--esp-3);
+    color: var(--cor-sobre-preto-suave);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color var(--transicao);
+}
+
+.login__voltar svg {
+    width: 14px;
+    height: 14px;
+    transition: transform var(--transicao);
+}
+
+.login__voltar:hover {
+    color: var(--cor-sobre-preto);
+}
+
+/* A seta anda um pouco para a esquerda, reforçando o "voltar" */
+.login__voltar:hover svg {
+    transform: translateX(-3px);
+}
+
+.login__botao-secundario:focus-visible,
+.login__voltar:focus-visible {
+    outline-color: var(--cor-prata);
 }
