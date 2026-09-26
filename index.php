@@ -1,26 +1,31 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 
-// Filtros da vitrine vêm da URL (?bitola=0.5&ordem=preco_asc).
-// Valores fora das listas permitidas são ignorados.
-$bitola = in_array($_GET['bitola'] ?? '', BITOLAS, true) ? $_GET['bitola'] : '';
-$ordem = isset(ORDENACOES[$_GET['ordem'] ?? '']) ? $_GET['ordem'] : 'novidades';
+// Filtros da vitrine vêm da URL: index.php?bitola=0.5&ordem=preco_asc
+$bitola = '';
+if (isset($_GET['bitola']) && in_array($_GET['bitola'], $bitolas)) {
+    $bitola = $_GET['bitola'];   // só aceita uma bitola da lista
+}
 
-// O admin também vê as lapiseiras inativas (marcadas no card), os clientes não.
+$ordem = 'novidades';
+if (isset($_GET['ordem'])) {
+    $ordem = $_GET['ordem'];     // a função relatorio só aceita os valores que conhece
+}
+
+// Opções do select "Ordenar por"
+$ordenacoes = [
+    'novidades'  => 'Novidades',
+    'preco_asc'  => 'Menor preço',
+    'preco_desc' => 'Maior preço',
+];
+
+// O admin também vê as lapiseiras que estão fora da vitrine; o cliente não
 $lapiseiras = relatorio($conexao, $bitola, $ordem, usuario_admin());
-
-// Endereço desta vitrine com os filtros atuais: usado para voltar ao mesmo lugar
-// depois de adicionar ao carrinho ou excluir uma lapiseira.
-$filtros_atuais = array_filter(['bitola' => $bitola, 'ordem' => $ordem !== 'novidades' ? $ordem : '']);
-$voltar = 'index.php' . ($filtros_atuais ? '?' . http_build_query($filtros_atuais) : '') . '#vitrine';
 
 $titulo = 'Lapisari · Lapiseiras de coleção';
 $estilos = ['vitrine.css', 'splash.css'];
 $scripts = ['animacoes.js', 'splash.js'];
 $scripts_inicio = ['splash-inicio.js'];
-// Com um aviso para mostrar (ex.: "Logout realizado"), não mostramos a splash:
-// ela cobriria a mensagem
-$classes_html = isset($_SESSION['aviso']) ? 'sem-splash' : '';
 $pagina = 'inicio';
 include __DIR__ . '/includes/head.php';
 ?>
@@ -136,7 +141,7 @@ include __DIR__ . '/includes/head.php';
                             <label for="filtro-bitola">Bitola</label>
                             <select name="bitola" id="filtro-bitola" class="campo__controle">
                                 <option value="">Todas</option>
-                                <?php foreach (BITOLAS as $opcao): ?>
+                                <?php foreach ($bitolas as $opcao): ?>
                                     <option value="<?= $opcao ?>" <?= $opcao === $bitola ? 'selected' : '' ?>><?= formatar_bitola($opcao) ?></option>
                                 <?php endforeach; ?>
                             </select>
@@ -144,8 +149,8 @@ include __DIR__ . '/includes/head.php';
                         <div class="filtros__campo">
                             <label for="filtro-ordem">Ordenar por</label>
                             <select name="ordem" id="filtro-ordem" class="campo__controle">
-                                <?php foreach (ORDENACOES as $chave => $opcao): ?>
-                                    <option value="<?= $chave ?>" <?= $chave === $ordem ? 'selected' : '' ?>><?= $opcao['rotulo'] ?></option>
+                                <?php foreach ($ordenacoes as $chave => $rotulo): ?>
+                                    <option value="<?= $chave ?>" <?= $chave === $ordem ? 'selected' : '' ?>><?= $rotulo ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -181,7 +186,7 @@ include __DIR__ . '/includes/head.php';
 
                                     <?php if (usuario_admin()): ?>
                                         <div class="card-produto__admin">
-                                            <a href="<?= url('app/update.php?' . http_build_query(['id' => $lapiseira['id'], 'voltar' => $voltar])) ?>" class="botao-icone"
+                                            <a href="<?= url('app/update.php?id=' . $lapiseira['id']) ?>" class="botao-icone"
                                                aria-label="Editar <?= e($lapiseira['modelo']) ?>" title="Editar">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
                                                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -193,7 +198,6 @@ include __DIR__ . '/includes/head.php';
                                             <form method="post" action="<?= url('app/delete.php') ?>"
                                                   data-confirmar="Excluir a lapiseira &quot;<?= e($lapiseira['marca'] . ' ' . $lapiseira['modelo']) ?>&quot;? Essa ação não pode ser desfeita.">
                                                 <input type="hidden" name="id" value="<?= $lapiseira['id'] ?>">
-                                                <input type="hidden" name="voltar" value="<?= e($voltar) ?>">
                                                 <button type="submit" class="botao-icone botao-icone--perigo"
                                                         aria-label="Excluir <?= e($lapiseira['modelo']) ?>" title="Excluir">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
@@ -216,7 +220,6 @@ include __DIR__ . '/includes/head.php';
 
                                 <form method="post" action="<?= url('carrinho/adicionar.php') ?>" class="card-produto__acao">
                                     <input type="hidden" name="id" value="<?= $lapiseira['id'] ?>">
-                                    <input type="hidden" name="voltar" value="<?= e($voltar) ?>">
                                     <button type="submit" class="botao botao--contorno botao--largo"
                                             <?= $lapiseira['ativo'] ? '' : 'disabled' ?>>Adicionar ao Carrinho</button>
                                 </form>

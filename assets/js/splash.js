@@ -39,7 +39,7 @@ const DURACAO_PINGO = 160;    // cada pingo dos "i"
 const PAUSA_ANTES = 250;      // tela preta antes da caneta começar
 
 if (splash && !raiz.classList.contains('com-splash')) {
-    // Sem splash nesta visita (âncora, aviso ou recarregar no meio): some com ela
+    // Sem splash nesta visita (âncora, senha errada ou recarregar no meio): some com ela
     splash.remove();
 } else if (splash) {
     iniciarSplash();

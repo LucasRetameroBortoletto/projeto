@@ -1,12 +1,13 @@
 <?php
-// Consulta de uma lapiseira pelo ID (área do administrador)
-require_once __DIR__ . '/../login/verifica_admin.php';
+// Consulta de uma lapiseira pelo ID
+require_once __DIR__ . '/../login/verifica_admin.php'; // só o admin consulta
 
-$buscou = $_SERVER['REQUEST_METHOD'] == "POST";
+$buscou = false;
 $lapiseira = false;
-if ($buscou) {
-    $id = ler_id($_POST['id'] ?? null);
-    $lapiseira = $id ? consultar($conexao, $id) : false;
+
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $buscou = true;
+    $lapiseira = consultar($conexao, (int) $_POST['id']);   // false se o id não existir
 }
 
 $titulo = 'Consultar lapiseira · Lapisari';

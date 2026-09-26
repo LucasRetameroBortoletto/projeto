@@ -1,9 +1,15 @@
 <?php
-// Relatório com todas as lapiseiras, inclusive as que estão fora da vitrine (área do administrador)
-require_once __DIR__ . '/../login/verifica_admin.php';
+// Relatório com todas as lapiseiras, inclusive as que estão fora da vitrine
+require_once __DIR__ . '/../login/verifica_admin.php'; // só o admin vê
 
 $lapiseiras = relatorio($conexao, '', 'novidades', true);
-$total_ativas = count(array_filter($lapiseiras, fn($l) => $l['ativo']));
+// Conta quantas estão na vitrine
+$total_ativas = 0;
+foreach ($lapiseiras as $lapiseira) {
+    if ($lapiseira['ativo']) {
+        $total_ativas++;
+    }
+}
 
 $titulo = 'Relatório · Lapisari';
 $pagina = 'relatorio';
@@ -58,7 +64,7 @@ include __DIR__ . '/../includes/head.php';
                                     <td><?= date('d/m/Y', strtotime($lapiseira['criado_em'])) ?></td>
                                     <td>
                                         <div class="tabela__acoes">
-                                            <a href="<?= url('app/update.php?' . http_build_query(['id' => $lapiseira['id'], 'voltar' => 'app/select.php'])) ?>"
+                                            <a href="<?= url('app/update.php?id=' . $lapiseira['id']) ?>"
                                                class="botao-icone" aria-label="Editar <?= e($lapiseira['modelo']) ?>" title="Editar">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
                                                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -69,7 +75,6 @@ include __DIR__ . '/../includes/head.php';
                                             <form method="post" action="<?= url('app/delete.php') ?>"
                                                   data-confirmar="Excluir a lapiseira &quot;<?= e($lapiseira['marca'] . ' ' . $lapiseira['modelo']) ?>&quot;? Essa ação não pode ser desfeita.">
                                                 <input type="hidden" name="id" value="<?= $lapiseira['id'] ?>">
-                                                <input type="hidden" name="voltar" value="app/select.php">
                                                 <button type="submit" class="botao-icone botao-icone--perigo"
                                                         aria-label="Excluir <?= e($lapiseira['modelo']) ?>" title="Excluir">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"

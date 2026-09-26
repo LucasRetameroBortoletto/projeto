@@ -55,7 +55,6 @@ CRUD de lapiseiras com vitrine pública, login de usuários, área do administra
 │   ├── lapiseira.php          a lapiseira em SVG (header e botão do login)
 │   ├── assinatura.php         "Lapisari" em SVG de linha única (TRAÇO PROVISÓRIO: troque aqui)
 │   ├── metamorfose.php        cartão de login que nasce do header
-│   ├── aviso.php              mensagens depois de salvar/excluir
 │   └── footer.php
 ├── assets/
 │   ├── css/                   base, layout, vitrine, forms, login, metamorfose, carrinho, splash
@@ -100,6 +99,7 @@ lapiseiras {
 3. Coloque o projeto na pasta do servidor (ex.: `htdocs/MINI SISTEMA` no XAMPP) e acesse
    `http://localhost/MINI SISTEMA/`.
    - Se usar outra pasta, ajuste `BASE_URL` em `includes/config.php`.
+   - Depois de atualizar CSS/JS, use Ctrl+F5 para o navegador não usar a versão antiga guardada.
    - Com o servidor embutido (`php -S localhost:8000` dentro da pasta do projeto), use `BASE_URL` vazio (`''`).
 4. Dê permissão de escrita ao PHP na pasta `uploads/lapiseiras/`.
 5. Crie sua conta pelo site e torne-a administradora:

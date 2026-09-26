@@ -50,5 +50,3 @@ $metamorfose_aberta = !usuario_logado() && isset($_SESSION['login_erro']);
 <?php if (!usuario_logado()) include __DIR__ . '/metamorfose.php'; ?>
 
 <?php if (usuario_admin()) include __DIR__ . '/barra_admin.php'; ?>
-
-<?php include __DIR__ . '/aviso.php'; ?>

@@ -409,55 +409,6 @@ input[type="file"].campo__controle::file-selector-button:hover {
     background-color: var(--cor-sucesso-fundo);
 }
 
-/* Aviso flutuante (definir_aviso() no PHP): aparece logo abaixo do header
-   e some sozinho depois de alguns segundos (assets/js/site.js). */
-.aviso {
-    position: fixed;
-    top: calc(var(--altura-header) + var(--esp-4));
-    left: 50%;
-    z-index: 90;
-    display: flex;
-    align-items: center;
-    gap: var(--esp-4);
-    max-width: 560px;
-    padding: var(--esp-3) var(--esp-3) var(--esp-3) var(--esp-5);
-    background-color: var(--cor-superficie);
-    border: 1px solid var(--cor-linha);
-    border-left: 2px solid var(--cor-sucesso);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra-card);
-    font-size: 14px;
-    transform: translateX(-50%);
-    transition: opacity 300ms ease, transform 300ms ease;
-}
-
-.aviso--erro {
-    border-left-color: var(--cor-erro);
-}
-
-.aviso--saindo {
-    opacity: 0;
-    transform: translate(-50%, -8px);
-}
-
-.aviso__fechar {
-    display: grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    color: var(--cor-texto-suave);
-    font-size: 18px;
-    line-height: 1;
-    transition: color var(--transicao), background-color var(--transicao);
-}
-
-.aviso__fechar:hover {
-    color: var(--cor-texto);
-    background-color: var(--cor-foto);
-}
-
-
 /* ---- Movimento reduzido --------------------------------------------- */
 /* Quem pede menos movimento no sistema operacional recebe as mudanças
    de estado instantâneas, sem transições nem animações. */

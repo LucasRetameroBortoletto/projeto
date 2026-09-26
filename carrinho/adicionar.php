@@ -1,21 +1,18 @@
 <?php
-// Recebe o POST do botão "Adicionar ao Carrinho" e volta para a vitrine.
+// Recebe o clique em "Adicionar ao Carrinho" (formulário POST do card na vitrine)
 require_once __DIR__ . '/../includes/functions.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== "POST") {
-    redirecionar('index.php');
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
+    $id = (int) $_POST['id'];
+    $lapiseira = consultar($conexao, $id);
+
+    // Só entra no carrinho uma lapiseira que existe e está na vitrine
+    if ($lapiseira && $lapiseira['ativo']) {
+        carrinho_adicionar($id);
+    }
 }
 
-$id = ler_id($_POST['id'] ?? null);
-$voltar = caminho_retorno($_POST['voltar'] ?? '', 'index.php#vitrine');
-$lapiseira = $id ? consultar($conexao, $id) : false;
-
-// Só entra no carrinho o que existe e está na vitrine
-if ($lapiseira && $lapiseira['ativo']) {
-    carrinho_adicionar($id);
-    definir_aviso('sucesso', $lapiseira['marca'] . ' ' . $lapiseira['modelo'] . ' foi adicionada ao carrinho.');
-} else {
-    definir_aviso('erro', 'Esta lapiseira não está disponível.');
-}
-
-redirecionar($voltar);
+// Volta para a vitrine. O contador do carrinho no header já mostra o item novo.
+header("Location: " . url('index.php') . '#vitrine');
+exit;
+?>

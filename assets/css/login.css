@@ -8,10 +8,6 @@
     padding-top: 0; /* esta página não tem o header fixo */
 }
 
-.pagina-login .aviso {
-    top: var(--esp-5);
-}
-
 .login {
     display: grid;
     place-items: center;

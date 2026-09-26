@@ -1,8 +1,14 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 
+// Lista do carrinho (dados de cada lapiseira + quantidade + subtotal)
 $itens = carrinho_itens($conexao);
-$total = array_sum(array_column($itens, 'subtotal'));
+
+// Soma os subtotais para ter o total do pedido
+$total = 0;
+foreach ($itens as $item) {
+    $total = $total + $item['subtotal'];
+}
 
 $titulo = 'Carrinho · Lapisari';
 $estilos = ['carrinho.css'];

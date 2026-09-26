@@ -3,39 +3,36 @@ require_once __DIR__ . '/../includes/functions.php';
 
 // Quem já está logado não precisa ver o login
 if (usuario_logado()) {
-    redirecionar('index.php');
+    header("Location: " . url('index.php'));
+    exit;
 }
 
-// Quando o login vem do cartão do header (metamorfose), o formulário manda
-// "voltar" com a página onde a pessoa estava: o sucesso ou o erro voltam para lá.
-$voltar = caminho_retorno($_POST['voltar'] ?? '', 'index.php');
-
 if($_SERVER['REQUEST_METHOD'] == "POST") {
-    $usuario = consultar_user($conexao, trim($_POST['email'] ?? ''));
+    $usuario = consultar_user($conexao, $_POST['email']);
 
-    // password_verify compara a senha digitada com o hash salvo no banco.
-    // A mensagem de erro é a mesma para "e-mail não existe" e "senha errada",
-    // para não revelar quais e-mails têm conta.
-    if($usuario && password_verify($_POST['password'] ?? '', $usuario['senha'])) {
+    // password_verify compara a senha digitada com o hash salvo no banco
+    if($usuario && password_verify($_POST['password'], $usuario['senha'])) {
 
-        // Novo id de sessão ao logar: impede que alguém que conhecia o id
-        // antigo (session fixation) aproveite a sessão já autenticada.
+        // Gera um novo id de sessão ao logar (proteção contra roubo de sessão)
         session_regenerate_id(true);
 
         //cria uma sessão para manter o usuário logado
         $_SESSION['id'] = $usuario['id'];
         $_SESSION['papel'] = $usuario['papel'];
 
-        definir_aviso('sucesso', 'Login realizado. Bem-vindo!');
-        redirecionar($voltar); //leva o usuário de volta à página onde estava (ou index.php)
+        // #vitrine: vai direto para a vitrine, sem repetir a splash de abertura
+        header("Location: " . url('index.php') . '#vitrine'); //leva o usuário a index.php
+        exit;
     } else {
         $mensagem = "Usuário ou senha inválidos!!";
 
-        // Veio do cartão do header: volta para a mesma página com o cartão já
-        // aberto, a mensagem visível e o e-mail preenchido (includes/metamorfose.php)
-        if (isset($_POST['voltar'])) {
-            $_SESSION['login_erro'] = ['mensagem' => $mensagem, 'email' => $_POST['email'] ?? ''];
-            redirecionar($voltar);
+        // O login veio do cartão do header (campo escondido "origem"):
+        // volta para a página inicial com o cartão já aberto e a mensagem.
+        // A mensagem fica guardada na sessão até o includes/metamorfose.php mostrá-la.
+        if (isset($_POST['origem']) && $_POST['origem'] == 'cartao') {
+            $_SESSION['login_erro'] = ['mensagem' => $mensagem, 'email' => $_POST['email']];
+            header("Location: " . url('index.php'));
+            exit;
         }
     }
 }
@@ -46,7 +43,6 @@ $scripts = ['login.js'];
 include __DIR__ . '/../includes/head.php';
 ?>
 <body class="pagina-login">
-    <?php include __DIR__ . '/../includes/aviso.php'; ?>
 
     <main class="login">
         <!-- Cartão horizontal: marca e boas-vindas à esquerda, formulário à direita,

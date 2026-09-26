@@ -59,25 +59,4 @@ document.querySelectorAll('input[type="file"][data-previa]').forEach(function (i
     }
 });
 
-
-// ---- Avisos flutuantes -----------------------------------------------
-// O aviso some sozinho depois de 6 s, ou ao clicar no X.
-// A classe aviso--saindo dispara a transição de opacidade do CSS; o elemento
-// só é removido do HTML quando essa transição termina (transitionend).
-document.querySelectorAll('[data-aviso]').forEach(function (aviso) {
-    function fechar() {
-        aviso.classList.add('aviso--saindo');
-        aviso.addEventListener('transitionend', function () {
-            aviso.remove();
-        }, { once: true });
-    }
-
-    const temporizador = setTimeout(fechar, 6000);
-
-    aviso.querySelector('[data-fechar-aviso]').addEventListener('click', function () {
-        clearTimeout(temporizador);
-        fechar();
-    });
-});
-
 })();

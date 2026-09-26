@@ -6,7 +6,7 @@
 // transforma o header neste cartão. Sem JavaScript, o "Entrar" continua
 // sendo um link normal para login/login.php.
 //
-// Se o login falhou, o login.php volta para esta mesma página com
+// Se o login falhou, o login.php volta para a página inicial com
 // $_SESSION['login_erro']: o cartão já é desenhado aberto, com a mensagem.
 $login_erro = $_SESSION['login_erro'] ?? null;
 unset($_SESSION['login_erro']);
@@ -44,10 +44,10 @@ unset($_SESSION['login_erro']);
         <?php endif; ?>
 
         <!-- Mesmo endpoint e mesmos campos da página de login.
-             "voltar" traz a pessoa de volta a esta página depois do login. -->
+             "origem" avisa o login.php que o envio veio do cartão (para reabri-lo em caso de erro). -->
         <form action="<?= url('login/login.php') ?>" method="POST" class="login__formulario metamorfose__formulario"
               novalidate data-form-login>
-            <input type="hidden" name="voltar" value="<?= e(pagina_atual()) ?>">
+            <input type="hidden" name="origem" value="cartao">
 
             <div class="login__campo metamorfose__entrada">
                 <label for="metamorfose-email">E-mail</label>

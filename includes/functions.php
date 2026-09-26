@@ -2,136 +2,57 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../database/connect_postgres.php';
 
-
-// =====================================================================
-// Constantes do catálogo
-// =====================================================================
-
-// Bitolas aceitas (a mesma lista do CHECK no banco). Ficam como texto porque
-// é assim que chegam do formulário e do PostgreSQL (NUMERIC vem como "0.5").
-const BITOLAS = ['0.3', '0.5', '0.7', '0.9', '1.3', '2.0'];
-
-// Ordenações da vitrine. A chave vem da URL (?ordem=preco_asc) e o valor entra
-// no SQL. Nome de coluna não pode ser parâmetro de prepared statement, então
-// só aceitamos o que está nesta lista fixa: nada digitado pelo usuário chega ao SQL.
-const ORDENACOES = [
-    'novidades'  => ['rotulo' => 'Novidades',   'sql' => 'criado_em DESC, id DESC'],
-    'preco_asc'  => ['rotulo' => 'Menor preço', 'sql' => 'preco ASC, id ASC'],
-    'preco_desc' => ['rotulo' => 'Maior preço', 'sql' => 'preco DESC, id DESC'],
-];
-
-// Upload das fotos
-const IMAGEM_TAMANHO_MAXIMO = 2 * 1024 * 1024; // 2 MB
-const IMAGEM_TIPOS = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
-const PASTA_UPLOADS = 'uploads/lapiseiras'; // relativo à raiz do projeto
-
-// Páginas para onde um formulário pode mandar o usuário de volta (campo "voltar").
-// Sem essa lista, alguém poderia usar o campo para redirecionar para outro site.
-const PAGINAS_RETORNO = ['index.php', 'app/select.php', 'app/delete.php', 'carrinho/index.php', 'login/registerUser.php'];
+// Bitolas aceitas (as mesmas do CHECK no banco)
+$bitolas = ['0.3', '0.5', '0.7', '0.9', '1.3', '2.0'];
 
 
 // =====================================================================
-// Utilidades
+// Funções de apoio para as telas
 // =====================================================================
 
-// Escapa texto antes de colocá-lo no HTML. Todo dado vindo do banco ou do
-// usuário passa por aqui: "<script>" vira "&lt;script&gt;" e é exibido como texto.
-function e($valor) {
-    return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
+// Escapa um texto antes de mostrar no HTML.
+// Se alguém cadastrar "<script>" como nome, ele aparece como texto e não é executado.
+function e($texto) {
+    return htmlspecialchars($texto ?? '', ENT_QUOTES, 'UTF-8');
 }
 
-// Monta o endereço completo de uma página ou arquivo do projeto.
-// url('app/create.php') -> '/MINI%20SISTEMA/app/create.php'
-function url($caminho = '') {
-    return str_replace(' ', '%20', BASE_URL . '/' . ltrim($caminho, '/'));
+// Monta o endereço de uma página ou arquivo do projeto.
+// Ex.: url('app/create.php') -> '/MINI SISTEMA/app/create.php'
+function url($caminho) {
+    return str_replace(' ', '%20', BASE_URL . '/' . $caminho);
 }
 
-// Igual a url(), mas acrescenta ?v=<data de modificação> em CSS/JS/imagens.
-// Quando o arquivo muda, o endereço muda e o navegador não usa a versão antiga do cache.
-function asset($caminho) {
-    $arquivo = __DIR__ . '/../' . $caminho;
-    $versao = is_file($arquivo) ? filemtime($arquivo) : 0;
-    return url($caminho) . '?v=' . $versao;
-}
-
-function redirecionar($caminho) {
-    header('Location: ' . url($caminho));
-    exit; // sem exit o PHP continuaria executando o resto da página
-}
-
-// Aceita o destino de retorno só se for uma das PAGINAS_RETORNO (com ou sem ?query).
-function caminho_retorno($caminho, $padrao) {
-    $partes = parse_url((string) $caminho);
-    if ($partes === false || isset($partes['scheme']) || isset($partes['host'])
-        || !in_array($partes['path'] ?? '', PAGINAS_RETORNO, true)) {
-        return $padrao;
-    }
-    return $caminho;
-}
-
-// Converte o id recebido do formulário/URL em inteiro positivo, ou null se for inválido.
-// Evita mandar "abc" para uma coluna inteira do PostgreSQL (o que geraria erro).
-function ler_id($valor) {
-    $id = filter_var($valor, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    return $id === false ? null : $id;
-}
-
+// Ex.: 129.9 -> "R$ 129,90"
 function formatar_preco($valor) {
-    return 'R$ ' . number_format((float) $valor, 2, ',', '.');
+    return 'R$ ' . number_format($valor, 2, ',', '.');
 }
 
+// Ex.: "0.5" -> "0.5 mm"
 function formatar_bitola($bitola) {
-    return number_format((float) $bitola, 1, '.', '') . ' mm';
+    return number_format($bitola, 1, '.', '') . ' mm';
 }
 
-// Foto do produto ou a imagem padrão, quando não há foto cadastrada.
+// Endereço da foto da lapiseira, ou da imagem padrão quando não há foto
 function imagem_lapiseira($lapiseira) {
-    return $lapiseira['imagem'] ? url($lapiseira['imagem']) : asset('assets/img/produto-sem-foto.svg');
+    if ($lapiseira['imagem']) {
+        return url($lapiseira['imagem']);
+    }
+    return url('assets/img/produto-sem-foto.svg');
 }
 
-
-// =====================================================================
-// Avisos (mensagens que sobrevivem a um redirecionamento)
-// =====================================================================
-// Depois de salvar algo, a página redireciona (para o F5 não reenviar o formulário).
-// A mensagem de sucesso fica guardada na sessão e é exibida uma única vez
-// pela próxima página, através de includes/aviso.php.
-
-function definir_aviso($tipo, $texto) {
-    $_SESSION['aviso'] = ['tipo' => $tipo, 'texto' => $texto];
-}
-
-function pegar_aviso() {
-    $aviso = $_SESSION['aviso'] ?? null;
-    unset($_SESSION['aviso']);
-    return $aviso;
-}
-
-
-// =====================================================================
-// Sessão do usuário
-// =====================================================================
-
+// Quem está logado? (o login grava o id na sessão)
 function usuario_logado() {
     return isset($_SESSION['id']);
 }
 
-// Caminho da página atual dentro do projeto (ex.: 'index.php?bitola=0.5'),
-// usado como "voltar" nos formulários do header
-function pagina_atual() {
-    $script = rawurldecode($_SERVER['SCRIPT_NAME'] ?? '');
-    $caminho = ltrim(substr($script, strlen(BASE_URL)), '/');
-    $consulta = $_SERVER['QUERY_STRING'] ?? '';
-    return $caminho . ($consulta !== '' ? '?' . $consulta : '');
-}
-
+// O usuário logado é administrador?
 function usuario_admin() {
-    return ($_SESSION['papel'] ?? '') === 'admin';
+    return isset($_SESSION['papel']) && $_SESSION['papel'] == 'admin';
 }
 
 
 // =====================================================================
-// Lapiseiras (CRUD)
+// CRUD de lapiseiras (mesma ideia do CRUD de alunos)
 // =====================================================================
 
 function cadastrar($conexao, $modelo, $marca, $bitola, $preco, $imagem, $ativo) {
@@ -139,213 +60,232 @@ function cadastrar($conexao, $modelo, $marca, $bitola, $preco, $imagem, $ativo) 
             VALUES (:modelo, :marca, :bitola, :preco, :imagem, :ativo)";
 
     $stmt = $conexao->prepare($sql);
-    $stmt->bindValue(":modelo", $modelo);
-    $stmt->bindValue(":marca", $marca);
-    $stmt->bindValue(":bitola", $bitola);
-    $stmt->bindValue(":preco", $preco);
-    $stmt->bindValue(":imagem", $imagem, $imagem === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-    $stmt->bindValue(":ativo", $ativo ? 'true' : 'false');
+    $stmt->bindParam(":modelo", $modelo);
+    $stmt->bindParam(":marca", $marca);
+    $stmt->bindParam(":bitola", $bitola);
+    $stmt->bindParam(":preco", $preco);
+    $stmt->bindParam(":imagem", $imagem);
+    $stmt->bindParam(":ativo", $ativo);   // "true" ou "false", vindo do formulário
 
     $stmt->execute();
 }
 
-// Devolve true se alguma linha foi apagada.
 function deletar($conexao, $id) {
     $sql = "DELETE FROM lapiseiras WHERE id = :id";
 
     $stmt = $conexao->prepare($sql);
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+    $stmt->bindParam(":id", $id);
     $stmt->execute();
-
-    return $stmt->rowCount() > 0;
 }
 
-// Devolve a lapiseira como array, ou false se o id não existir.
+// Busca uma lapiseira pelo id. Devolve os dados ou false se não existir.
 function consultar($conexao, $id) {
     $sql = "SELECT * FROM lapiseiras WHERE id = :id";
 
     $stmt = $conexao->prepare($sql);
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+    $stmt->bindParam(":id", $id);
     $stmt->execute();
 
-    return $stmt->fetch();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Lista as lapiseiras. Usada pela vitrine (com filtro e ordenação) e pelo relatório do admin.
-//   $bitola: uma das BITOLAS, ou '' para todas
-//   $ordem: uma das chaves de ORDENACOES
-//   $incluir_inativas: true só para o admin, que precisa ver as que estão fora da vitrine
-function relatorio($conexao, $bitola = '', $ordem = 'novidades', $incluir_inativas = false) {
-    $condicoes = [];
-    $parametros = [];
+// Lista as lapiseiras.
+//   $bitola  -> '' para todas, ou uma bitola ('0.5', ...) para filtrar
+//   $ordem   -> 'novidades', 'preco_asc' ou 'preco_desc'
+//   $todas   -> true mostra também as que estão fora da vitrine (só o admin usa)
+function relatorio($conexao, $bitola = '', $ordem = 'novidades', $todas = false) {
+    $sql = "SELECT * FROM lapiseiras WHERE 1 = 1";
+    // "WHERE 1 = 1" é sempre verdadeiro: serve só para podermos
+    // ir acrescentando "AND ..." abaixo sem se preocupar com o primeiro filtro
 
-    if (!$incluir_inativas) {
-        $condicoes[] = "ativo = true";
+    if (!$todas) {
+        $sql .= " AND ativo = true";
     }
-    if (in_array($bitola, BITOLAS, true)) {
-        $condicoes[] = "bitola = :bitola";
-        $parametros[':bitola'] = $bitola;
+    if ($bitola != '') {
+        $sql .= " AND bitola = :bitola";
     }
 
-    $sql = "SELECT * FROM lapiseiras";
-    if ($condicoes) {
-        $sql .= " WHERE " . implode(" AND ", $condicoes);
+    // A ordenação não pode ser um parâmetro (:ordem) do prepared statement,
+    // então escolhemos entre textos fixos. Nada digitado pelo usuário entra aqui.
+    if ($ordem == 'preco_asc') {
+        $sql .= " ORDER BY preco ASC";
+    } elseif ($ordem == 'preco_desc') {
+        $sql .= " ORDER BY preco DESC";
+    } else {
+        $sql .= " ORDER BY criado_em DESC, id DESC";
     }
-    $sql .= " ORDER BY " . (ORDENACOES[$ordem] ?? ORDENACOES['novidades'])['sql'];
 
     //stmt é uma variável, função do própio PDO
     $stmt = $conexao->prepare($sql);
-    $stmt->execute($parametros);
+    if ($bitola != '') {
+        $stmt->bindParam(":bitola", $bitola);
+    }
+    $stmt->execute();
 
-    return $stmt->fetchAll();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function atualizar($conexao, $id, $modelo, $marca, $bitola, $preco, $imagem, $ativo) {
 
-    $sql = "UPDATE lapiseiras
-            SET modelo = :modelo, marca = :marca, bitola = :bitola, preco = :preco, imagem = :imagem, ativo = :ativo
-            WHERE id = :id";
+    $sql = "UPDATE lapiseiras SET modelo = :modelo, marca = :marca, bitola = :bitola,
+            preco = :preco, imagem = :imagem, ativo = :ativo WHERE id = :id";
 
     $stmt = $conexao->prepare($sql);
 
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+    $stmt->bindValue(":id", $id);
     $stmt->bindValue(":modelo", $modelo);
     $stmt->bindValue(":marca", $marca);
     $stmt->bindValue(":bitola", $bitola);
     $stmt->bindValue(":preco", $preco);
-    $stmt->bindValue(":imagem", $imagem, $imagem === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-    $stmt->bindValue(":ativo", $ativo ? 'true' : 'false');
+    $stmt->bindValue(":imagem", $imagem);
+    $stmt->bindValue(":ativo", $ativo);
 
     $stmt->execute();
 }
 
-// Confere os campos do formulário de lapiseira (cadastro e edição).
-// Devolve [dados limpos, erros]; erros é um array campo => mensagem (vazio = tudo certo).
-function validar_lapiseira($entrada) {
-    $dados = [
-        'modelo' => trim($entrada['modelo'] ?? ''),
-        'marca'  => trim($entrada['marca'] ?? ''),
-        'bitola' => $entrada['bitola'] ?? '',
-        // aceita "129,90" e "129.90"
-        'preco'  => str_replace(',', '.', trim($entrada['preco'] ?? '')),
-        'ativo'  => $entrada['ativo'] ?? '',
-    ];
+// Confere os campos do formulário de lapiseira.
+// Devolve uma lista de mensagens de erro (lista vazia = tudo certo).
+function validar_lapiseira($dados) {
+    global $bitolas;
     $erros = [];
 
-    if ($dados['modelo'] === '' || mb_strlen($dados['modelo']) > 120) {
-        $erros['modelo'] = 'Informe o modelo (até 120 caracteres).';
-    }
-    if ($dados['marca'] === '' || mb_strlen($dados['marca']) > 60) {
-        $erros['marca'] = 'Informe a marca (até 60 caracteres).';
-    }
-    if (!in_array($dados['bitola'], BITOLAS, true)) {
-        $erros['bitola'] = 'Escolha uma bitola da lista.';
-    }
-    if (!is_numeric($dados['preco']) || $dados['preco'] < 0 || $dados['preco'] >= 100000000) {
-        $erros['preco'] = 'Informe um preço válido.';
-    }
-    if (!in_array($dados['ativo'], ['true', 'false'], true)) {
-        $erros['ativo'] = 'Escolha se a lapiseira aparece na vitrine.';
+    // Se algum campo não veio no envio, considera vazio
+    $campos = ['modelo', 'marca', 'bitola', 'preco', 'ativo'];
+    foreach ($campos as $campo) {
+        if (!isset($dados[$campo])) {
+            $dados[$campo] = '';
+        }
     }
 
-    return [$dados, $erros];
+    if (trim($dados['modelo']) == '') {
+        $erros[] = 'Informe o modelo.';
+    }
+    if (trim($dados['marca']) == '') {
+        $erros[] = 'Informe a marca.';
+    }
+    if (!in_array($dados['bitola'], $bitolas)) {
+        $erros[] = 'Escolha uma bitola da lista.';
+    }
+    if (!is_numeric($dados['preco']) || $dados['preco'] < 0) {
+        $erros[] = 'Informe um preço válido.';
+    }
+    if ($dados['ativo'] != 'true' && $dados['ativo'] != 'false') {
+        $erros[] = 'Escolha se a lapiseira aparece na vitrine.';
+    }
+
+    return $erros;
 }
 
 
 // =====================================================================
-// Upload de fotos
+// Upload da foto
 // =====================================================================
 
-// Valida e salva a foto enviada pelo formulário.
-// Devolve o caminho salvo (ex.: "uploads/lapiseiras/3f9c...jpg"), null se nenhum
-// arquivo foi enviado, ou lança RuntimeException com a mensagem para o usuário.
+// Salva a foto enviada no formulário, depois de conferir tipo e tamanho.
+// Devolve um array com duas posições:
+//   ['uploads/lapiseiras/abc123.jpg', '']  -> deu certo (caminho, sem erro)
+//   [null, '']                            -> nenhuma foto foi enviada
+//   [null, 'mensagem']                    -> foto recusada (sem caminho, com erro)
 function salvar_imagem($arquivo) {
-    if (!$arquivo || $arquivo['error'] === UPLOAD_ERR_NO_FILE) {
-        return null;
-    }
-    // INI_SIZE: maior que o upload_max_filesize do php.ini
-    if (in_array($arquivo['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
-        || $arquivo['size'] > IMAGEM_TAMANHO_MAXIMO) {
-        throw new RuntimeException('A foto deve ter no máximo 2 MB.');
-    }
-    if ($arquivo['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($arquivo['tmp_name'])) {
-        throw new RuntimeException('Não foi possível receber a foto. Tente de novo.');
+    // Campo de arquivo vazio: não é erro, a lapiseira só fica sem foto
+    if (!isset($arquivo) || $arquivo['error'] == UPLOAD_ERR_NO_FILE) {
+        return [null, ''];
     }
 
-    // O tipo que o navegador informa ($arquivo['type']) pode ser falsificado.
-    // O finfo lê os primeiros bytes do próprio arquivo para descobrir o tipo real.
+    // Tamanho: no máximo 2 MB. UPLOAD_ERR_INI_SIZE = passou do limite do php.ini
+    if ($arquivo['error'] == UPLOAD_ERR_INI_SIZE || $arquivo['size'] > 2 * 1024 * 1024) {
+        return [null, 'A foto deve ter no máximo 2 MB.'];
+    }
+    if ($arquivo['error'] != UPLOAD_ERR_OK) {
+        return [null, 'Não foi possível receber a foto.'];
+    }
+
+    // Tipo: o nome do arquivo pode mentir ("virus.php" renomeado para "foto.jpg"),
+    // então o finfo abre o arquivo e descobre o tipo verdadeiro pelo conteúdo
+    $tipos_aceitos = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     $tipo = (new finfo(FILEINFO_MIME_TYPE))->file($arquivo['tmp_name']);
-    if (!isset(IMAGEM_TIPOS[$tipo])) {
-        throw new RuntimeException('A foto precisa ser JPG, PNG ou WEBP.');
+
+    if (!isset($tipos_aceitos[$tipo])) {
+        return [null, 'A foto precisa ser JPG, PNG ou WEBP.'];
     }
 
-    // Nome aleatório: não sobrescreve outra foto e não usa o nome original,
-    // que vem do usuário e poderia conter caracteres perigosos.
-    $nome = bin2hex(random_bytes(16)) . '.' . IMAGEM_TIPOS[$tipo];
-    $pasta = __DIR__ . '/../' . PASTA_UPLOADS;
+    // Nome novo e aleatório para o arquivo: não sobrescreve outra foto e não
+    // usa o nome original, que vem do usuário
+    $nome = bin2hex(random_bytes(16)) . '.' . $tipos_aceitos[$tipo];
+    $caminho = 'uploads/lapiseiras/' . $nome;
 
-    if (!is_dir($pasta) && !mkdir($pasta, 0755, true)) {
-        throw new RuntimeException('A pasta de fotos não existe e não pôde ser criada.');
-    }
-    if (!move_uploaded_file($arquivo['tmp_name'], $pasta . '/' . $nome)) {
-        throw new RuntimeException('Não foi possível salvar a foto no servidor.');
-    }
+    move_uploaded_file($arquivo['tmp_name'], __DIR__ . '/../' . $caminho);
 
-    return PASTA_UPLOADS . '/' . $nome;
+    return [$caminho, ''];
 }
 
+// Apaga do disco uma foto que não é mais usada
 function apagar_imagem($caminho) {
-    if (!$caminho) {
-        return;
-    }
-    // basename() descarta qualquer pasta do caminho: só apagamos dentro de uploads/lapiseiras
-    $arquivo = __DIR__ . '/../' . PASTA_UPLOADS . '/' . basename($caminho);
-    if (is_file($arquivo)) {
-        unlink($arquivo);
+    if ($caminho) {
+        // basename() pega só o nome do arquivo: garante que só apagamos
+        // arquivos de dentro da pasta uploads/lapiseiras
+        $arquivo = __DIR__ . '/../uploads/lapiseiras/' . basename($caminho);
+        if (is_file($arquivo)) {
+            unlink($arquivo);
+        }
     }
 }
 
 
 // =====================================================================
-// Carrinho (guardado na sessão: $_SESSION['carrinho'][id da lapiseira] = quantidade)
+// Carrinho
 // =====================================================================
+// O carrinho não fica no banco: fica na sessão, como um array
+//   $_SESSION['carrinho'] = [ id da lapiseira => quantidade ]
+// Ex.: [3 => 1, 5 => 2]  ->  1 unidade da lapiseira 3 e 2 da lapiseira 5
 
 function carrinho_adicionar($id) {
-    $_SESSION['carrinho'][$id] = ($_SESSION['carrinho'][$id] ?? 0) + 1;
+    if (!isset($_SESSION['carrinho'])) {
+        $_SESSION['carrinho'] = [];
+    }
+
+    if (isset($_SESSION['carrinho'][$id])) {
+        $_SESSION['carrinho'][$id] = $_SESSION['carrinho'][$id] + 1;   // já tinha: soma 1
+    } else {
+        $_SESSION['carrinho'][$id] = 1;                               // primeira unidade
+    }
 }
 
 function carrinho_remover($id) {
     unset($_SESSION['carrinho'][$id]);
 }
 
-// Total de unidades no carrinho (usado no contador do header)
+// Quantidade total de unidades (é o número que aparece no header)
 function carrinho_quantidade() {
-    return array_sum($_SESSION['carrinho'] ?? []);
+    if (!isset($_SESSION['carrinho'])) {
+        return 0;
+    }
+    return array_sum($_SESSION['carrinho']);
 }
 
-// Busca no banco os dados das lapiseiras do carrinho, com quantidade e subtotal.
+// Monta a lista do carrinho com os dados de cada lapiseira vindos do banco
 function carrinho_itens($conexao) {
-    $carrinho = $_SESSION['carrinho'] ?? [];
-    if (!$carrinho) {
-        return [];
-    }
-
-    // Um "?" para cada id: WHERE id IN (?, ?, ?). Continua sendo prepared statement.
-    $marcadores = implode(', ', array_fill(0, count($carrinho), '?'));
-    $stmt = $conexao->prepare("SELECT * FROM lapiseiras WHERE id IN ($marcadores) AND ativo = true ORDER BY modelo");
-    $stmt->execute(array_keys($carrinho));
-
     $itens = [];
-    foreach ($stmt->fetchAll() as $lapiseira) {
-        $lapiseira['quantidade'] = $carrinho[$lapiseira['id']];
-        $lapiseira['subtotal'] = $lapiseira['preco'] * $lapiseira['quantidade'];
-        $itens[$lapiseira['id']] = $lapiseira;
+
+    if (!isset($_SESSION['carrinho'])) {
+        return $itens;
     }
 
-    // Tira do carrinho o que foi excluído ou saiu da vitrine desde que foi adicionado
-    $_SESSION['carrinho'] = array_intersect_key($carrinho, $itens);
+    foreach ($_SESSION['carrinho'] as $id => $quantidade) {
+        $lapiseira = consultar($conexao, $id);
 
-    return array_values($itens);
+        // Foi excluída ou saiu da vitrine depois de entrar no carrinho: tira do carrinho
+        if (!$lapiseira || !$lapiseira['ativo']) {
+            carrinho_remover($id);
+            continue;
+        }
+
+        $lapiseira['quantidade'] = $quantidade;
+        $lapiseira['subtotal'] = $lapiseira['preco'] * $quantidade;
+        $itens[] = $lapiseira;
+    }
+
+    return $itens;
 }
 
 
@@ -356,10 +296,13 @@ function carrinho_itens($conexao) {
 function cadastrar_user($conexao, $email, $password) {
     $sql = "INSERT INTO usuarios(email, senha) VALUES(:email, :senha)";
 
+    // A senha nunca é salva como foi digitada: o password_hash transforma
+    // em um código que não dá para desfazer. No login usamos password_verify.
+    $senha_hash = password_hash($password, PASSWORD_DEFAULT);
+
     $stmt = $conexao->prepare($sql);
-    $stmt->bindValue(":email", $email);
-    // password_hash gera um hash com "sal" aleatório: a senha nunca fica salva em texto puro
-    $stmt->bindValue(":senha", password_hash($password, PASSWORD_DEFAULT));
+    $stmt->bindParam(":email", $email);
+    $stmt->bindParam(":senha", $senha_hash);
 
     $stmt->execute();
 }
@@ -369,9 +312,9 @@ function consultar_user($conexao, $email) {
     $sql = "SELECT id, email, senha, papel FROM usuarios WHERE email = :email";
 
     $stmt = $conexao->prepare($sql);
-    $stmt->bindValue(":email", $email);
+    $stmt->bindParam(":email", $email);
     $stmt->execute();
 
-    return $stmt->fetch();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 ?>

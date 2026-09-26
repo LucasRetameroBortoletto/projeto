@@ -1,22 +1,20 @@
+<?php require_once __DIR__ . '/../login/verifica_admin.php'; // só o admin exclui ?>
 <?php
-// Só o administrador exclui lapiseiras (verifica_admin já carrega functions.php)
-require_once __DIR__ . '/../login/verifica_admin.php';
+$mensagem = '';
 
-// A exclusão só acontece por POST: um link (GET) poderia ser aberto sem querer,
-// por um robô ou por um <img src="..."> em outro site.
+// A exclusão só acontece por POST (formulário), nunca por um link:
+// um link poderia ser aberto sem querer e apagar algo.
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    $id = ler_id($_POST['id'] ?? null);
-    $voltar = caminho_retorno($_POST['voltar'] ?? '', 'app/delete.php');
-    $lapiseira = $id ? consultar($conexao, $id) : false;
+    $id = (int) ($_POST['id'] ?? 0);   // (int) transforma em número; "abc" vira 0
+    $lapiseira = consultar($conexao, $id);
 
-    if ($lapiseira && deletar($conexao, $id)) {
-        apagar_imagem($lapiseira['imagem']);
-        definir_aviso('sucesso', 'Lapiseira "' . $lapiseira['marca'] . ' ' . $lapiseira['modelo'] . '" excluída com sucesso.');
+    if ($lapiseira) {
+        deletar($conexao, $id);
+        apagar_imagem($lapiseira['imagem']);   // apaga também a foto do disco
+        $mensagem = "Registro apagado com sucesso";
     } else {
-        definir_aviso('erro', $id ? "Nenhuma lapiseira encontrada com o ID $id." : 'Informe um ID válido.');
+        $mensagem = "Nenhuma lapiseira encontrada com o ID $id.";
     }
-
-    redirecionar($voltar);
 }
 
 $titulo = 'Excluir lapiseira · Lapisari';
@@ -35,7 +33,7 @@ include __DIR__ . '/../includes/head.php';
                 <p class="pagina__texto">Informe o ID da lapiseira. A exclusão remove o modelo e a foto e não pode ser desfeita.</p>
             </div>
 
-            <!-- data-confirmar: o site.js pede confirmação antes de enviar -->
+            <!-- data-confirmar: o site.js pergunta "tem certeza?" antes de enviar -->
             <form action="" method="post" class="formulario formulario--em-linha"
                   data-confirmar="Excluir a lapiseira com este ID? Essa ação não pode ser desfeita.">
                 <div class="campo">
@@ -45,6 +43,10 @@ include __DIR__ . '/../includes/head.php';
                 <input type="reset" value="Limpar" class="botao botao--texto">
                 <input type="submit" value="Apagar" class="botao botao--perigo">
             </form>
+
+            <?php if ($mensagem != ''): ?>
+                <p class="resultado-vazio"><?= e($mensagem) ?> · <a href="<?= url('index.php') ?>#vitrine">Voltar à vitrine</a></p>
+            <?php endif; ?>
         </div>
     </main>
 

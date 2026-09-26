@@ -8,7 +8,7 @@
 (function () {
     var raiz = document.documentElement;
 
-    // O PHP marca "sem-splash" quando há um aviso para mostrar (ex.: logout)
+    // O PHP marca "sem-splash" quando o cartão de login precisa abrir já aberto (senha errada)
     if (raiz.classList.contains('sem-splash')) {
         return;
     }

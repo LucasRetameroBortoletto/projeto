@@ -1,36 +1,29 @@
+<?php require_once __DIR__ . '/../login/verifica_admin.php'; // só o admin cadastra ?>
 <?php
-// Só o administrador cadastra lapiseiras (verifica_admin já carrega functions.php)
-require_once __DIR__ . '/../login/verifica_admin.php';
-
+// Valores iniciais dos campos (formulário vazio, "Sim" marcado na vitrine)
 $valores = ['modelo' => '', 'marca' => '', 'bitola' => '', 'preco' => '', 'ativo' => 'true'];
 $erros = [];
+$sucesso = false;
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    [$valores, $erros] = validar_lapiseira($_POST);
+    $valores = $_POST;                       // mantém o que foi digitado, caso dê erro
+    $erros = validar_lapiseira($_POST);
 
-    // A foto só é salva depois que os outros campos passam na validação,
-    // para não sobrar arquivo na pasta de um cadastro que não aconteceu.
+    // A foto só é salva se os outros campos estiverem certos
     $imagem = null;
-    if (!$erros) {
-        try {
-            $imagem = salvar_imagem($_FILES['imagem'] ?? null);
-        } catch (RuntimeException $erro) {
-            $erros['imagem'] = $erro->getMessage();
+    if (count($erros) == 0) {
+        list($imagem, $erro_imagem) = salvar_imagem($_FILES['imagem']);
+        if ($erro_imagem != '') {
+            $erros[] = $erro_imagem;
         }
     }
 
-    if (!$erros) {
-        try {
-            cadastrar($conexao, $valores['modelo'], $valores['marca'], $valores['bitola'],
-                      $valores['preco'], $imagem, $valores['ativo'] === 'true');
+    if (count($erros) == 0) {
+        cadastrar($conexao, $_POST['modelo'], $_POST['marca'], $_POST['bitola'], $_POST['preco'], $imagem, $_POST['ativo']);
+        $sucesso = true;
 
-            definir_aviso('sucesso', 'Lapiseira "' . $valores['marca'] . ' ' . $valores['modelo'] . '" cadastrada com sucesso!');
-            // Redireciona depois de salvar: assim um F5 não cadastra a mesma lapiseira de novo
-            redirecionar('index.php#vitrine');
-        } catch (PDOException $erro) {
-            apagar_imagem($imagem);
-            $erros['geral'] = 'Não foi possível salvar no banco de dados. Tente novamente.';
-        }
+        // Cadastrou: limpa o formulário para o próximo cadastro
+        $valores = ['modelo' => '', 'marca' => '', 'bitola' => '', 'preco' => '', 'ativo' => 'true'];
     }
 }
 
@@ -50,11 +43,18 @@ include __DIR__ . '/../includes/head.php';
                 <p class="pagina__texto">Preencha os dados do modelo. Se ele estiver disponível, aparece na vitrine assim que for salvo.</p>
             </div>
 
-            <!-- enctype multipart: obrigatório para o formulário conseguir enviar arquivos -->
+            <!-- enctype multipart: obrigatório para o formulário conseguir enviar arquivos (a foto) -->
             <form action="" method="post" enctype="multipart/form-data" class="formulario">
-                <?php if (isset($erros['geral'])): ?>
-                    <p class="alerta alerta--erro" role="alert"><?= e($erros['geral']) ?></p>
+
+                <?php if ($sucesso): ?>
+                    <p class="alerta alerta--sucesso">
+                        Lapiseira cadastrada com sucesso! <a href="<?= url('index.php') ?>#vitrine">Ver na vitrine</a>
+                    </p>
                 <?php endif; ?>
+
+                <?php foreach ($erros as $erro): ?>
+                    <p class="alerta alerta--erro"><?= e($erro) ?></p>
+                <?php endforeach; ?>
 
                 <?php include __DIR__ . '/../includes/form_lapiseira.php'; ?>
 
