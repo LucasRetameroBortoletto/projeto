@@ -23,7 +23,9 @@
 'use strict';
 
 const overlay = document.querySelector('[data-metamorfose]');
-const botaoEntrar = document.querySelector('[data-abrir-metamorfose]');
+// O "Entrar" do header. Outros links com data-abrir-metamorfose (ex.: "Entrar"
+// na página de criar conta) também abrem o cartão.
+const botaoEntrar = document.querySelector('.cabecalho [data-abrir-metamorfose]');
 if (!overlay || !botaoEntrar) {
     return; // usuário logado ou página sem header (ex.: login.php)
 }
@@ -54,6 +56,10 @@ const CURVA = 'cubic-bezier(0.65, 0, 0.35, 1)';
 
 // 'fechado' | 'abrindo' | 'aberto' | 'fechando'
 let estado = overlay.hidden ? 'fechado' : 'aberto';
+
+// Pediram para fechar (Esc, X ou véu) enquanto o cartão ainda abria:
+// guardamos o pedido e fechamos assim que a abertura terminar
+let fecharAoTerminarDeAbrir = false;
 
 
 // ---- Invert: o transform que leva uma peça do cartão até o header ------------
@@ -108,8 +114,7 @@ async function abrir() {
     if (menosMovimento) {
         header.classList.add('cabecalho--metamorfose');
         await overlay.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150 }).finished;
-        estado = 'aberto';
-        focarPrimeiroCampo();
+        terminarAbertura();
         return;
     }
 
@@ -155,13 +160,26 @@ async function abrir() {
 
     // Estado final = o que o CSS já define: removemos as animações
     cancelarAnimacoes(pecasAnimadas);
+    terminarAbertura();
+}
+
+function terminarAbertura() {
     estado = 'aberto';
+    if (fecharAoTerminarDeAbrir) {
+        fecharAoTerminarDeAbrir = false;
+        fechar();
+        return;
+    }
     focarPrimeiroCampo();
 }
 
 
 // ---- Fechar (caminho inverso) ----------------------------------------------------
 async function fechar() {
+    if (estado === 'abrindo') {
+        fecharAoTerminarDeAbrir = true;
+        return;
+    }
     if (estado !== 'aberto') {
         return;
     }
@@ -222,7 +240,7 @@ function concluirFechamento() {
     // que ainda conta como invisível (acontecia com movimento reduzido ligado).
     requestAnimationFrame(function () {
         requestAnimationFrame(function () {
-            botaoEntrar.focus();
+            quemAbriu.focus();
         });
     });
 }
@@ -240,12 +258,16 @@ function elementosFocaveis() {
     ));
 }
 
-overlay.addEventListener('keydown', function (evento) {
-    if (evento.key === 'Escape') {
+// Esc fecha. Escutamos na página inteira (e não só no cartão) porque, durante
+// a abertura, o foco ainda está no link "Entrar" que foi clicado, fora do cartão.
+document.addEventListener('keydown', function (evento) {
+    if (evento.key === 'Escape' && estado !== 'fechado') {
         evento.preventDefault();
         fechar();
-        return;
     }
+});
+
+overlay.addEventListener('keydown', function (evento) {
     // Tab no último elemento volta ao primeiro (e Shift+Tab no primeiro vai
     // ao último): o foco não escapa para a página escondida atrás do véu
     if (evento.key === 'Tab') {
@@ -266,9 +288,15 @@ overlay.querySelectorAll('[data-fechar-metamorfose]').forEach(function (elemento
     elemento.addEventListener('click', fechar);
 });
 
-botaoEntrar.addEventListener('click', function (evento) {
-    evento.preventDefault(); // com JS não vamos para login.php: abrimos o cartão
-    abrir();
+// Quem abriu o cartão recebe o foco de volta quando ele fecha
+let quemAbriu = botaoEntrar;
+
+document.querySelectorAll('[data-abrir-metamorfose]').forEach(function (link) {
+    link.addEventListener('click', function (evento) {
+        evento.preventDefault(); // com JS não vamos para login.php: abrimos o cartão
+        quemAbriu = link;
+        abrir();
+    });
 });
 
 // Voltou de um login recusado: o cartão já veio aberto do servidor, sem animação

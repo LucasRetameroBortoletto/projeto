@@ -46,7 +46,7 @@ include __DIR__ . '/../includes/head.php';
             <form action="" method="post" class="formulario">
                 <?php if ($sucesso): ?>
                     <p class="alerta alerta--sucesso">
-                        Usuário cadastrado com sucesso! <a href="<?= url('login/login.php') ?>">Entrar</a>
+                        Usuário cadastrado com sucesso! <a href="<?= url('login/login.php') ?>" data-abrir-metamorfose>Entrar</a>
                     </p>
                 <?php endif; ?>
 
@@ -68,9 +68,11 @@ include __DIR__ . '/../includes/head.php';
                     </div>
                 </div>
 
+                <!-- data-abrir-metamorfose: com JS, os links "Entrar" abrem o cartão de login
+                     que nasce do header (metamorfose.js); sem JS, levam para login.php -->
                 <div class="formulario__acoes">
                     <p class="formulario__rodape">
-                        Já tem conta? <a href="<?= url('login/login.php') ?>">Entrar</a>
+                        Já tem conta? <a href="<?= url('login/login.php') ?>" data-abrir-metamorfose>Entrar</a>
                     </p>
                     <input type="reset" value="Limpar" class="botao botao--texto">
                     <input type="submit" value="Cadastrar" class="botao botao--primario">
