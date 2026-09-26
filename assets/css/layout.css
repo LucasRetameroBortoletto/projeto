@@ -162,6 +162,29 @@ body:has(.barra-admin) {
     height: 100%;
 }
 
+/* Link "‹ Vitrine": separado dos outros por uma linha fina à direita */
+.barra-admin__voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-2);
+    padding-right: var(--esp-5);
+    border-right: 1px solid var(--cor-linha);
+    color: var(--cor-texto);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.barra-admin__voltar svg {
+    width: 14px;
+    height: 14px;
+    transition: transform var(--transicao);
+}
+
+.barra-admin__voltar:hover svg {
+    transform: translateX(-3px);
+}
+
 .barra-admin__rotulo {
     font-size: 11px;
     font-weight: 600;

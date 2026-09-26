@@ -330,6 +330,26 @@ function cadastrar_user($conexao, $email, $password) {
     $stmt->execute();
 }
 
+// Lista todos os usuários (para a tela de usuários do admin)
+function listar_usuarios($conexao) {
+    $sql = "SELECT id, email, papel FROM usuarios ORDER BY email";
+
+    $stmt = $conexao->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Troca o papel de um usuário ('cliente' ou 'admin')
+function atualizar_papel($conexao, $id, $papel) {
+    $sql = "UPDATE usuarios SET papel = :papel WHERE id = :id";
+
+    $stmt = $conexao->prepare($sql);
+    $stmt->bindParam(":papel", $papel);
+    $stmt->bindParam(":id", $id);
+    $stmt->execute();
+}
+
 function consultar_user($conexao, $email) {
 
     $sql = "SELECT id, email, senha, papel FROM usuarios WHERE email = :email";

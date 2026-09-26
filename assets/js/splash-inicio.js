@@ -13,6 +13,13 @@
         return;
     }
 
+    // Veio de outra página da própria loja (ex.: clicou no logotipo estando no
+    // carrinho): a splash é a "porta de entrada" do site, então só aparece
+    // para quem chega de fora ou digita o endereço, não a cada volta à inicial
+    if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+        return;
+    }
+
     // Link para um ponto da página (ex.: index.php#vitrine depois de
     // adicionar ao carrinho): vai direto ao ponto, sem splash
     if (window.location.hash) {

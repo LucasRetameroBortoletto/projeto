@@ -34,7 +34,8 @@ CRUD de lapiseiras com vitrine pública, login de usuários, área do administra
 │   ├── update.php             atualizar lapiseira
 │   ├── delete.php             excluir lapiseira
 │   ├── select.php             relatório
-│   └── select_where.php       consultar por ID
+│   ├── select_where.php       consultar por ID
+│   └── usuarios.php           trocar o papel (cliente/admin) das contas
 ├── carrinho/
 │   ├── index.php              página do carrinho
 │   ├── adicionar.php          recebe o POST "Adicionar ao Carrinho"
@@ -102,7 +103,8 @@ lapiseiras {
    - Depois de atualizar CSS/JS, use Ctrl+F5 para o navegador não usar a versão antiga guardada.
    - Com o servidor embutido (`php -S localhost:8000` dentro da pasta do projeto), use `BASE_URL` vazio (`''`).
 4. Dê permissão de escrita ao PHP na pasta `uploads/lapiseiras/`.
-5. Crie sua conta pelo site e torne-a administradora:
+5. Crie sua conta pelo site e torne-a administradora (só a primeira vez;
+   depois, outros admins podem ser definidos pela tela **Usuários** da barra de administração):
    ```sql
    UPDATE usuarios SET papel = 'admin' WHERE email = 'seu@email.com';
    ```
