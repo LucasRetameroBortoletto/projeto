@@ -104,11 +104,11 @@
 
 .conceito--fixada > .container {
     position: sticky;
-    top: var(--altura-header);
+    top: var(--altura-topo);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: calc(100vh - var(--altura-header));
+    height: calc(100vh - var(--altura-topo));
 }
 
 .pilar__icone {
@@ -143,7 +143,7 @@
     background-color: var(--cor-superficie);
     border-top: 1px solid var(--cor-linha);
     /* Ao pular para #vitrine, desconta a altura do header fixo para o título não ficar escondido */
-    scroll-margin-top: var(--altura-header);
+    scroll-margin-top: var(--altura-topo);
 }
 
 .vitrine__topo {

@@ -139,15 +139,27 @@ main {
 
 /* ---- Barra do administrador ---------------------------------------- */
 .barra-admin {
+    /* sticky: a barra acompanha a rolagem e fica sempre logo abaixo do header,
+       em qualquer página (antes ela rolava junto e sumia na página inicial) */
+    position: sticky;
+    top: var(--altura-header);
+    z-index: 90;
+    height: var(--altura-barra-admin);   /* a borda de baixo já está incluída */
     background-color: var(--cor-superficie);
     border-bottom: 1px solid var(--cor-linha);
+}
+
+/* Quando a página tem a barra do admin, o "topo" ocupado passa a ser
+   header + barra. :has() = "o body que contém uma .barra-admin". */
+body:has(.barra-admin) {
+    --altura-topo: calc(var(--altura-header) + var(--altura-barra-admin));
 }
 
 .barra-admin__conteudo {
     display: flex;
     align-items: center;
     gap: var(--esp-6);
-    min-height: 52px;
+    height: 100%;
 }
 
 .barra-admin__rotulo {

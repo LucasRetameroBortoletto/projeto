@@ -60,7 +60,7 @@
 /* Resumo acompanha a rolagem da lista (sticky), sem sair de baixo do header */
 .resumo {
     position: sticky;
-    top: calc(var(--altura-header) + var(--esp-5));
+    top: calc(var(--altura-topo) + var(--esp-5));
     padding: var(--esp-6);
     background-color: var(--cor-superficie);
     border: 1px solid var(--cor-linha);

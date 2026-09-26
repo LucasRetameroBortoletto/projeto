@@ -45,6 +45,10 @@
     --largura-conteudo: 1320px;
     --margem-lateral: 48px;
     --altura-header: 92px;
+    --altura-barra-admin: 52px;
+    /* Espaço ocupado no topo da tela: só o header, ou header + barra do admin
+       (o valor muda sozinho quando a barra existe, veja layout.css) */
+    --altura-topo: var(--altura-header);
 
     /* ---- Acabamento ------------------------------------------------ */
     --raio: 2px;                        /* cantos quase retos: mais "joalheria", menos "app" */

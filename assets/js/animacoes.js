@@ -110,10 +110,12 @@ if (secaoConceito && menosMovimento) {
 
         // Quanto já se rolou dentro da seção, de 0 (topo da seção encostado no
         // header) a 1 (fim da seção, quando o conteúdo volta a rolar)
-        const alturaHeader = document.querySelector('.cabecalho').offsetHeight;
+        // Espaço ocupado no topo: header + barra do admin (quando ela existe)
+        const barraAdmin = document.querySelector('.barra-admin');
+        const alturaTopo = document.querySelector('.cabecalho').offsetHeight + (barraAdmin ? barraAdmin.offsetHeight : 0);
         const caixa = secaoConceito.getBoundingClientRect();
-        const percurso = secaoConceito.offsetHeight - (window.innerHeight - alturaHeader);
-        const progresso = trecho(alturaHeader - caixa.top, 0, percurso);
+        const percurso = secaoConceito.offsetHeight - (window.innerHeight - alturaTopo);
+        const progresso = trecho(alturaTopo - caixa.top, 0, percurso);
 
         if (traco) {
             desenhar(traco, suavizar(trecho(progresso, TRECHO_TRACO[0], TRECHO_TRACO[1])));
