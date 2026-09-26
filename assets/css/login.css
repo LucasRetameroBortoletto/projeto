@@ -167,7 +167,7 @@
 }
 
 /* ---- Grafite vivo -------------------------------------------------------
-   O login.js define --grafite (1 a 4) conforme o e-mail é digitado.
+   O login.js define --grafite (1 a 9) conforme a SENHA é digitada.
    Usamos as propriedades individuais "scale" e "translate" (em vez de
    "transform") para o crescimento e o clique não sobrescreverem um ao outro:
    cada um mexe na sua propriedade e o navegador combina os dois.
@@ -182,22 +182,27 @@
 .login__lapiseira .lapiseira__grafite {
     scale: var(--grafite, 1) 1;
     color: var(--cor-sobre-preto);
-    transition: scale 220ms cubic-bezier(0.16, 1, 0.3, 1), translate 120ms cubic-bezier(0.3, 0, 0.2, 1);
+    /* curva com um leve "passar do ponto": o grafite avança num tranco, como no clique real */
+    transition: scale 260ms cubic-bezier(0.34, 1.56, 0.64, 1), translate 120ms cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 /* ---- Clique mecânico -----------------------------------------------------
    O botão traseiro afunda (anda para dentro do corpo) e o grafite avança,
    como numa lapiseira de verdade. :active cobre o mouse pressionado;
-   .login__lapiseira--clique é posta pelo login.js no envio (Enter também). */
+   .login__lapiseira--clique é posta pelo login.js no envio (Enter também) e
+   .login__lapiseira--tecla a cada tecla digitada na senha. */
 .login__lapiseira .lapiseira__botao {
     transition: translate 120ms cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 .login__lapiseira:active .lapiseira__botao,
-.login__lapiseira--clique .lapiseira__botao {
+.login__lapiseira--clique .lapiseira__botao,
+.login__lapiseira--tecla .lapiseira__botao {
     translate: 4px 0;
 }
 
+/* No clique por tecla (--tecla) o grafite não se desloca: o avanço já vem
+   do crescimento dele, e o deslocamento abriria um vão entre ponta e grafite */
 .login__lapiseira:active .lapiseira__grafite,
 .login__lapiseira--clique .lapiseira__grafite {
     translate: 3px 0;

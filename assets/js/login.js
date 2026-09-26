@@ -2,7 +2,7 @@
 // Lapisari · login.js
 // 1) Validação: campo vazio ganha borda de erro, aria-invalid e foco.
 //    O servidor valida de novo; isto é só para responder rápido.
-// 2) Grafite vivo: cresce conforme o e-mail é digitado.
+// 2) Grafite vivo: a cada tecla na senha a lapiseira clica e o grafite cresce.
 // 3) Grafite quebra: se o servidor recusou o login, o grafite se parte.
 // 4) Clique mecânico: com os campos preenchidos, a lapiseira "clica"
 //    (botão traseiro afunda, grafite avança) e só então o formulário é enviado.
@@ -21,7 +21,8 @@ if (!form) {
     return; // página sem formulário de login (ex.: usuário já logado)
 }
 const campoEmail = form.elements.email;
-const campos = [campoEmail, form.elements.password];
+const campoSenha = form.elements.password;
+const campos = [campoEmail, campoSenha];
 const lapiseira = form.querySelector('.login__lapiseira');
 const grafite = lapiseira.querySelector('.lapiseira__grafite');
 const fragmento = lapiseira.querySelector('.lapiseira__fragmento');
@@ -30,46 +31,61 @@ const fragmento = lapiseira.querySelector('.lapiseira__fragmento');
 const menosMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
-// ---- 2) Grafite vivo ------------------------------------------------------
+// ---- 2) Grafite vivo (campo de SENHA) --------------------------------------
+// A cada tecla digitada na senha, a lapiseira "clica" (o botão de trás afunda,
+// como quando se aperta uma lapiseira de verdade) e o grafite avança.
 // Comprimento do grafite = escala horizontal de 1 (6 unidades, o normal)
-// até 4 (24 unidades), proporcional aos caracteres digitados.
+// até 9 (54 unidades, bem para fora da ponta), proporcional aos caracteres.
 const GRAFITE_MINIMO = 1;
-const GRAFITE_MAXIMO = 4;
-const CARACTERES_PARA_O_MAXIMO = 28;
+const GRAFITE_MAXIMO = 9;
+const CARACTERES_PARA_O_MAXIMO = 12;
 
-// Depois de uma quebra, o grafite volta curto e cresce só com o que for
-// digitado a partir daí (o e-mail anterior continua no campo).
-let caracteresNaQuebra = 0;
 let comprimentoAtual = GRAFITE_MINIMO;
+let temporizadorClique = null;
 
 function atualizarGrafite() {
-    const digitados = Math.max(0, campoEmail.value.length - caracteresNaQuebra);
-    const fracao = Math.min(digitados / CARACTERES_PARA_O_MAXIMO, 1);
+    const fracao = Math.min(campoSenha.value.length / CARACTERES_PARA_O_MAXIMO, 1);
     comprimentoAtual = GRAFITE_MINIMO + fracao * (GRAFITE_MAXIMO - GRAFITE_MINIMO);
     lapiseira.style.setProperty('--grafite', comprimentoAtual.toFixed(3));
 }
 
-campoEmail.addEventListener('input', function () {
-    // Se o usuário apagou tudo, zera a referência da quebra
-    if (campoEmail.value.length < caracteresNaQuebra) {
-        caracteresNaQuebra = campoEmail.value.length;
+// Clique rápido do botão traseiro: põe a classe e tira logo depois.
+// Se a pessoa digitar rápido, cada tecla reinicia o clique.
+function clicarLapiseira() {
+    if (menosMovimento) {
+        return;
     }
+    lapiseira.classList.remove('login__lapiseira--tecla');
+    void lapiseira.offsetWidth;   // obriga o navegador a "ver" a remoção antes de repor
+    lapiseira.classList.add('login__lapiseira--tecla');
+
+    clearTimeout(temporizadorClique);
+    temporizadorClique = setTimeout(function () {
+        lapiseira.classList.remove('login__lapiseira--tecla');
+    }, 110);
+}
+
+campoSenha.addEventListener('input', function () {
+    clicarLapiseira();
     atualizarGrafite();
 });
 
 
 // ---- 3) Grafite quebra ----------------------------------------------------
 // O PHP marca o botão com login__lapiseira--erro quando recusa o login.
-// Como a página recarregou, primeiro mostramos o grafite no tamanho que ele
-// tinha (o e-mail continua no campo) e então ele se parte.
-function quebrarGrafite() {
-    atualizarGrafite(); // grafite no comprimento do e-mail enviado
+// A página recarregou com a senha vazia: o grafite avança (como se ainda
+// estivesse com a senha digitada) e então se parte, voltando ao toco.
+const GRAFITE_NA_QUEBRA = 6;
 
+function quebrarGrafite() {
     if (menosMovimento) {
-        caracteresNaQuebra = campoEmail.value.length;
         atualizarGrafite();
         return;
     }
+
+    // 1) grafite avança até o tamanho da quebra
+    comprimentoAtual = GRAFITE_NA_QUEBRA;
+    lapiseira.style.setProperty('--grafite', comprimentoAtual);
 
     // Posiciona o fragmento sobre a metade de fora do grafite.
     // O grafite começa em x=276 e mede 6 unidades × escala.
@@ -78,19 +94,18 @@ function quebrarGrafite() {
     const pontoDaQuebra = inicio + (fim - inicio) * 0.45;
     fragmento.setAttribute('d', 'M' + pontoDaQuebra.toFixed(2) + ' 12 H' + fim.toFixed(2));
 
-    // Um instante para o usuário ver o grafite inteiro antes do estalo
+    // 2) um instante depois, o estalo
     setTimeout(function () {
         fragmento.setAttribute('opacity', '1');
         fragmento.classList.add('lapiseira__fragmento--caindo');
         lapiseira.classList.add('login__lapiseira--quebrou');
 
-        // O que sobrou é o toco: volta ao tamanho mínimo, sem transição (estalo seco)
-        caracteresNaQuebra = campoEmail.value.length;
+        // O que sobrou é o toco: volta ao tamanho da senha (vazia), sem transição
         grafite.style.transition = 'none';
         atualizarGrafite();
         void grafite.getBoundingClientRect(); // aplica agora, antes de religar a transição
         grafite.style.transition = '';
-    }, 450);
+    }, 650);
 
     fragmento.addEventListener('animationend', function () {
         fragmento.classList.remove('lapiseira__fragmento--caindo');
@@ -102,7 +117,7 @@ function quebrarGrafite() {
 if (lapiseira.classList.contains('login__lapiseira--erro')) {
     quebrarGrafite();
 } else {
-    atualizarGrafite(); // navegador pode ter preenchido o e-mail sozinho
+    atualizarGrafite(); // o navegador pode ter preenchido a senha sozinho
 }
 
 
