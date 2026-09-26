@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../includes/functions.php';
 
-// Tira só os dados do login da sessão; o carrinho continua
-unset($_SESSION['id']);
-unset($_SESSION['papel']);
+// Sair apaga a sessão inteira: o login e também o carrinho
+$_SESSION = [];
+session_destroy();
 
 header("Location: " . url('index.php'));
 exit;

@@ -46,8 +46,31 @@ function usuario_logado() {
 }
 
 // O usuário logado é administrador?
+// trim/strtolower: aceita "admin", "Admin" ou "admin   " (com espaços sobrando no banco)
 function usuario_admin() {
-    return isset($_SESSION['papel']) && $_SESSION['papel'] == 'admin';
+    return isset($_SESSION['papel']) && strtolower(trim($_SESSION['papel'])) == 'admin';
+}
+
+
+// =====================================================================
+// Papel do usuário sempre atualizado
+// =====================================================================
+// O papel (admin/cliente) é conferido no banco a cada página aberta.
+// Assim, se você trocar o papel direto no banco, a mudança vale na hora,
+// sem precisar sair e entrar de novo.
+if (usuario_logado()) {
+    $stmt = $conexao->prepare("SELECT papel FROM usuarios WHERE id = :id");
+    $stmt->bindParam(":id", $_SESSION['id']);
+    $stmt->execute();
+    $usuario_atual = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($usuario_atual) {
+        $_SESSION['papel'] = $usuario_atual['papel'];
+    } else {
+        // O usuário foi apagado do banco: desloga
+        unset($_SESSION['id']);
+        unset($_SESSION['papel']);
+    }
 }
 
 
